@@ -1,0 +1,383 @@
+// Tacx.IR 2.0 - Comprehensive Strength Test
+// Tests every major feature: variables, arithmetic, strings, arrays,
+// conditionals, loops, functions, recursion, logical ops, break/continue,
+// truthy/falsy, indexing, nesting, edge cases
+
+// ---- Utility Functions ----
+Dhori factorial(n) {
+    Jodi n <= 1 {
+        Ferot 1;
+    } Naile {
+        Ferot n * factorial(n - 1);
+    }
+}
+
+Dhori fibonacci(n) {
+    Jodi n == 0 { Ferot 0; }
+    Jodi n == 1 { Ferot 1; }
+    Ferot fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+Dhori isEven(n) {
+    Ferot n % 2 == 0;
+}
+
+Dhori sumArray(arr, len) {
+    Rakho $total = 0;
+    Rakho $i = 0;
+    Jotokhon $i < len {
+        Rakho $total = $total + arr[$i];
+        Rakho $i = $i + 1;
+    }
+    Ferot $total;
+}
+
+Dhori greetUser(name, age) {
+    Jodi age >= 18 Ebong age < 60 {
+        Ferot "Nomoshkar " + name + ", apni ekjon probin!";
+    } Naile {
+        Jodi age < 18 {
+            Ferot "Hello " + name + ", tumi ekhono choto!";
+        } Naile {
+            Ferot "Salam " + name + ", apni senior citizen!";
+        }
+    }
+}
+
+// ---- Main Program ----
+Bolo "====================";
+Bolo "Tacx.IR Strength Test";
+Bolo "====================";
+Bolo "";
+
+// Test 1: Basic I/O
+Bolo "--- Test 1: Basic I/O ---";
+Bolo "Apnar naam ki?";
+Poro $name;
+Bolo "Apnar boyosh koto?";
+Poro $age;
+Bolo "Welcome, " + $name + "!";
+Bolo "";
+
+// Test 2: Arithmetic Operations
+Bolo "--- Test 2: Arithmetic ---";
+Rakho $a = 100;
+Rakho $b = 7;
+Rakho $sum = $a + $b;
+Rakho $diff = $a - $b;
+Rakho $prod = $a * $b;
+Rakho $quot = $a / $b;
+Bolo "Sum: " + $sum;
+Bolo "Difference: " + $diff;
+Bolo "Product: " + $prod;
+Bolo "Quotient: " + $quot;
+Bolo "";
+
+// Test 3: String Operations
+Bolo "--- Test 3: String Operations ---";
+Rakho $greeting = "Hello";
+Rakho $space = " ";
+Rakho $world = "World";
+Rakho $full = $greeting + $space + $world + "!";
+Bolo $full;
+Rakho $mixed = "Number: " + 42 + " works!";
+Bolo $mixed;
+Bolo "";
+
+// Test 4: Comparisons
+Bolo "--- Test 4: Comparisons ---";
+Rakho $x = 50;
+Rakho $y = 30;
+Bolo "x == y: " + ($x == $y);
+Bolo "x != y: " + ($x != $y);
+Bolo "x > y: " + ($x > $y);
+Bolo "x < y: " + ($x < $y);
+Bolo "x >= y: " + ($x >= $y);
+Bolo "x <= y: " + ($x <= $y);
+Bolo "String compare: " + ("apple" == "apple");
+Bolo "String not equal: " + ("hello" != "world");
+Bolo "";
+
+// Test 5: Boolean Logic
+Bolo "--- Test 5: Boolean Logic ---";
+Rakho $t = Sotyo;
+Rakho $f = Mithya;
+Bolo "Sotyo Ebong Sotyo: " + ($t Ebong $t);
+Bolo "Sotyo Ebong Mithya: " + ($t Ebong $f);
+Bolo "Mithya Othoba Sotyo: " + ($f Othoba $t);
+Bolo "Mithya Othoba Mithya: " + ($f Othoba $f);
+Bolo "Na Sotyo: " + (Na $t);
+Bolo "Na Mithya: " + (Na $f);
+Bolo "Complex: " + (($x > 10 Ebong $y < 100) Othoba $f);
+Bolo "";
+
+// Test 6: Arrays
+Bolo "--- Test 6: Arrays ---";
+Rakho $numbers = [10, 20, 30, 40, 50];
+Bolo "Array elements:";
+Bolo "  [0]: " + $numbers[0];
+Bolo "  [1]: " + $numbers[1];
+Bolo "  [2]: " + $numbers[2];
+Bolo "  [3]: " + $numbers[3];
+Bolo "  [4]: " + $numbers[4];
+
+Rakho $mixedArr = [1, "two", Sotyo, Mithya, [100, 200]];
+Bolo "Mixed array test:";
+Bolo "  Number: " + $mixedArr[0];
+Bolo "  String: " + $mixedArr[1];
+Bolo "  Boolean: " + $mixedArr[2];
+Rakho $innerArr = $mixedArr[4];
+Bolo "  Nested array [0]: " + $innerArr[0];
+Bolo "  Nested array [1]: " + $innerArr[1];
+Rakho $numbers[2] = 999;
+Bolo "  Updated [2]: " + $numbers[2];
+Rakho $mixedArr[4][1] = 555;
+Bolo "  Updated nested [1]: " + $mixedArr[4][1];
+Bolo "";
+
+// Test 6B: Builtins
+Bolo "--- Test 6B: Builtins ---";
+Bolo "Length of numbers: " + Lomba($numbers);
+Rakho $pushLen = Dhukao($numbers, 60);
+Bolo "Length after Dhukao: " + $pushLen;
+Bolo "Last removed: " + BerKoro($numbers);
+Bolo "Type of array: " + Dhoron($numbers);
+Bolo "";
+
+// Test 7: Conditional (Jodi/Naile)
+Bolo "--- Test 7: Conditional ---";
+Rakho $score = 85;
+Jodi $score >= 90 {
+    Bolo "Grade: A+";
+} Naile {
+    Jodi $score >= 80 {
+        Bolo "Grade: A";
+    } Naile {
+        Jodi $score >= 70 {
+            Bolo "Grade: B";
+        } Naile {
+            Jodi $score >= 60 {
+                Bolo "Grade: C";
+            } Naile {
+                Bolo "Grade: F";
+            }
+        }
+    }
+}
+
+// Test truthy/falsy
+Rakho $emptyStr = "";
+Rakho $zero = 0;
+Rakho $nonZero = 1;
+Jodi $emptyStr {
+    Bolo "Empty string is truthy (WRONG!)";
+} Naile {
+    Bolo "Empty string is falsy (CORRECT!)";
+}
+Jodi $zero {
+    Bolo "Zero is truthy (WRONG!)";
+} Naile {
+    Bolo "Zero is falsy (CORRECT!)";
+}
+Jodi $nonZero {
+    Bolo "Non-zero is truthy (CORRECT!)";
+}
+Bolo "";
+
+// Test 8: Fixed Loop (Cholao)
+Bolo "--- Test 8: Cholao Loop ---";
+Rakho $counter = 0;
+Cholao 5 bar {
+    Bolo "  Iteration " + ($counter + 1);
+    Rakho $counter = $counter + 1;
+}
+Bolo "";
+
+// Test 9: While Loop (Jotokhon)
+Bolo "--- Test 9: Jotokhon Loop ---";
+Rakho $w = 0;
+Jotokhon $w < 5 {
+    Bolo "  While count: " + $w;
+    Rakho $w = $w + 1;
+}
+Bolo "";
+
+// Test 10: Break and Continue
+Bolo "--- Test 10: Break/Continue ---";
+Bolo "Continue demo (skipping 3):";
+Rakho $k = 0;
+Jotokhon $k < 7 {
+    Jodi $k == 3 {
+        Rakho $k = $k + 1;
+        Chalano;
+    }
+    Bolo "  Number: " + $k;
+    Rakho $k = $k + 1;
+}
+
+Bolo "Break demo (stop at 5):";
+Rakho $j = 0;
+Jotokhon Sotyo {
+    Jodi $j >= 5 {
+        Thamo;
+    }
+    Bolo "  Loop: " + $j;
+    Rakho $j = $j + 1;
+}
+Bolo "";
+
+// Test 11: Functions
+Bolo "--- Test 11: Functions ---";
+Bolo "Factorial of 5: " + factorial(5);
+Bolo "Factorial of 7: " + factorial(7);
+Bolo "Fibonacci of 10: " + fibonacci(10);
+Bolo "Fibonacci of 15: " + fibonacci(15);
+
+Rakho $testArr = [5, 10, 15, 20, 25];
+Rakho $arrSum = sumArray($testArr, 5);
+Bolo "Sum of array: " + $arrSum;
+
+Bolo greetUser($name, $age);
+Bolo greetUser("Rahim", 12);
+Bolo greetUser("Karim", 25);
+Bolo greetUser("Abdul", 65);
+Bolo "";
+
+// Test 12: Nested Loops and Complex Logic
+Bolo "--- Test 12: Nested Loops ---";
+Rakho $outer = 0;
+Jotokhon $outer < 3 {
+    Bolo "Outer loop: " + $outer;
+    Rakho $inner = 0;
+    Jotokhon $inner < 2 {
+        Bolo "  Inner loop: " + $inner;
+        Rakho $inner = $inner + 1;
+    }
+    Rakho $outer = $outer + 1;
+}
+Bolo "";
+
+// Test 13: Unary Operators
+Bolo "--- Test 13: Unary Operators ---";
+Rakho $pos = 42;
+Rakho $neg = -$pos;
+Bolo "Positive: " + $pos;
+Bolo "Negative: " + $neg;
+Bolo "Double negative: " + (-$neg);
+Bolo "NOT Sotyo: " + (Na Sotyo);
+Bolo "NOT Mithya: " + (Na Mithya);
+Bolo "NOT 1 (truthy): " + (Na 1);
+Bolo "NOT 0 (falsy): " + (Na 0);
+Bolo "";
+
+// Test 14: Expression Evaluation Order and Strings
+Bolo "--- Test 14: Expression Precedence ---";
+Bolo "3 + 4 * 2 = " + (3 + 4 * 2);
+Bolo "(3 + 4) * 2 = " + ((3 + 4) * 2);
+Bolo "10 - 2 * 3 + 1 = " + (10 - 2 * 3 + 1);
+Bolo "10 / 2 + 3 * 2 = " + (10 / 2 + 3 * 2);
+Bolo "Sotyo Ebong Mithya Othoba Sotyo = " + ($t Ebong $f Othoba $t);
+Bolo "Escaped quote: \"Tacx.IR\"";
+Bolo "Escaped newline line 1\nEscaped newline line 2";
+Bolo "";
+
+// Test 15: Variable Reassignment and Scope
+Bolo "--- Test 15: Variable Behavior ---";
+Rakho $mutable = "original";
+Bolo "Before: " + $mutable;
+Rakho $mutable = "changed";
+Bolo "After: " + $mutable;
+Rakho $mutable = $mutable + " again";
+Bolo "Concatenated: " + $mutable;
+
+Rakho $numVar = 10;
+Bolo "Number before: " + $numVar;
+Rakho $numVar = $numVar + 5;
+Bolo "Number after +5: " + $numVar;
+Rakho $numVar = $numVar * 2;
+Bolo "Number after *2: " + $numVar;
+Bolo "";
+
+// Test 16: Large Array Operations
+Bolo "--- Test 16: Array Processing ---";
+Rakho $bigArr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+Rakho $arrIndex = 0;
+Rakho $evenCount = 0;
+Rakho $oddCount = 0;
+Jotokhon $arrIndex < 10 {
+    Jodi isEven($bigArr[$arrIndex]) {
+        Rakho $evenCount = $evenCount + 1;
+    } Naile {
+        Rakho $oddCount = $oddCount + 1;
+    }
+    Rakho $arrIndex = $arrIndex + 1;
+}
+Bolo "Even numbers count: " + $evenCount;
+Bolo "Odd numbers count: " + $oddCount;
+Bolo "";
+
+// Test 17: Recursive Array Sum
+Dhori recursiveSum(arr, index, len) {
+    Jodi index >= len {
+        Ferot 0;
+    }
+    Ferot arr[index] + recursiveSum(arr, index + 1, len);
+}
+
+Rakho $rArr = [3, 7, 2, 9, 1];
+Rakho $rSum = recursiveSum($rArr, 0, 5);
+Bolo "--- Test 17: Recursive Sum ---";
+Bolo "Recursive sum: " + $rSum;
+Bolo "";
+
+// Test 18: Complex Boolean Expressions
+Bolo "--- Test 18: Complex Logic ---";
+Rakho $p = Sotyo;
+Rakho $q = Mithya;
+Rakho $r = Sotyo;
+Bolo "(p Ebong q) Othoba r = " + (($p Ebong $q) Othoba $r);
+Bolo "p Ebong (q Othoba r) = " + ($p Ebong ($q Othoba $r));
+Bolo "(Na p) Othoba (Na q) = " + ((Na $p) Othoba (Na $q));
+Bolo "Na (p Ebong q) = " + (Na ($p Ebong $q));
+Bolo "((x > 10) Ebong (y < 100)) Othoba Na t = " + ((($x > 10) Ebong ($y < 100)) Othoba (Na $t));
+Bolo "";
+
+// Final Summary
+Bolo "===================================";
+Bolo "All Tests Completed Successfully!";
+Bolo "===================================";
+Bolo "";
+Bolo "Final Summary:";
+Bolo "  Name: " + $name;
+Bolo "  Age: " + $age;
+Bolo "  Factorial of age: " + factorial($age);
+Bolo "  Fibonacci of 10: " + fibonacci(10);
+Bolo "  Greeting: " + greetUser($name, $age);
+Bolo "";
+Bolo "Language features demonstrated:";
+Bolo "  ✓ Variables & Assignment";
+Bolo "  ✓ Arithmetic (+, -, *, /)";
+Bolo "  ✓ String concatenation";
+Bolo "  ✓ Comparisons (==, !=, <, >, <=, >=)";
+Bolo "  ✓ Boolean logic (Ebong, Othoba, Na)";
+Bolo "  ✓ Truthy/Falsy evaluation";
+Bolo "  ✓ Conditionals (Jodi, Naile)";
+Bolo "  ✓ Fixed loops (Cholao ... bar)";
+Bolo "  ✓ While loops (Jotokhon)";
+Bolo "  ✓ Break and Continue (Thamo, Chalano)";
+Bolo "  ✓ Arrays and Indexing";
+Bolo "  ✓ Array mutation";
+Bolo "  ✓ Nested arrays";
+Bolo "  ✓ Native builtins";
+Bolo "  ✓ Functions with parameters";
+Bolo "  ✓ Recursive functions";
+Bolo "  ✓ Return values (Ferot)";
+Bolo "  ✓ Expression precedence";
+Bolo "  ✓ Unary operators (-, Na)";
+Bolo "  ✓ Variable reassignment";
+Bolo "  ✓ String-number coercion";
+Bolo "  ✓ Escaped strings";
+Bolo "  ✓ Complex nested logic";
+Bolo "  ✓ Array processing algorithms";
+Bolo "";
+Bolo "Tacx.IR is STRONG!";
