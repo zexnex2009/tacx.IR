@@ -68,6 +68,22 @@ Dhori build() {
         output = run_program('Bolo 5 % 2;')
         self.assertEqual(output, "1\n")
 
+
+    def test_unary_minus_rejects_boolean(self):
+        with self.assertRaisesRegex(TypeError, "Unary '-' requires number"):
+            execute_program('Bolo -Sotyo;')
+
+    def test_arithmetic_operators_reject_booleans(self):
+        for expr in (
+            'Bolo Sotyo + 1;',
+            'Bolo 1 - Mithya;',
+            'Bolo Sotyo * 3;',
+            'Bolo 4 / Mithya;',
+            'Bolo Sotyo % 2;',
+        ):
+            with self.assertRaisesRegex(TypeError, "requires numbers"):
+                execute_program(expr)
+
     def test_cholao_rejects_fractional_count(self):
         with self.assertRaisesRegex(TypeError, "Cholao count must be a non-negative integer"):
             execute_program("""
@@ -171,6 +187,19 @@ Bolo Dhoron([1, 2]);
 Bolo Dhoron(Sotyo);
 """)
         self.assertEqual(output, "shonkha\nlekha\ntalika\nsotyo-mithya\n")
+
+
+    def test_mixed_type_ordered_comparison_is_rejected(self):
+        with self.assertRaisesRegex(TypeError, "requires comparable values"):
+            execute_program('Bolo 10 < "2";')
+
+    def test_number_comparison_does_not_treat_bool_as_number(self):
+        with self.assertRaisesRegex(TypeError, "requires comparable values"):
+            execute_program('Bolo Sotyo < 2;')
+
+    def test_string_ordered_comparison_still_works(self):
+        output = run_program('Bolo "a" < "b";')
+        self.assertEqual(output, "True\n")
 
     def test_builtin_arity_errors_are_clear(self):
         with self.assertRaisesRegex(TypeError, "Builtin 'Lomba' expects 1 arguments, got 0"):
