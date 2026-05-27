@@ -98,7 +98,7 @@ graph TD
 
 #### [`tacxir/parser.py`](tacxir/parser.py) (The Parser)
 * **Role**: Syntactic analysis and tree validation.
-* **Details**: Processes raw tokens sequentially using recursive-descent parsing. Enforces mathematical precedence constraints (from logic operations down to simple numbers).Decodes escape sequence characters (like `\n`, `\t`) within string literal structures.
+* **Details**: Processes raw tokens sequentially using recursive-descent parsing. Enforces mathematical precedence constraints (from logic operations down to simple numbers). Decodes escape sequence characters (like `\n`, `\t`) within string literal structures.
 
 #### [`tacxir/interpreter.py`](tacxir/interpreter.py) (The Interpreter)
 * **Role**: Evaluation engine.

@@ -16,6 +16,10 @@ class ContinueException(Exception):
     pass
 
 
+def is_number(val) -> bool:
+    return isinstance(val, (int, float)) and not isinstance(val, bool)
+
+
 def is_truthy(val) -> bool:
     if isinstance(val, bool):
         return val
@@ -178,7 +182,7 @@ class TacxIR:
         if isinstance(node, UnaryOpNode):
             val = self.eval_expr(node.operand)
             if node.op == "-":
-                if not isinstance(val, (int, float)):
+                if not is_number(val):
                     raise TypeError(f"Unary '-' requires number, got {type(val).__name__}")
                 return -val
             elif node.op == "!":
@@ -194,9 +198,11 @@ class TacxIR:
             if op == "+":
                 if isinstance(left, str) or isinstance(right, str):
                     return str(left) + str(right)
+                if not is_number(left) or not is_number(right):
+                    raise TypeError("Operator '+' requires numbers when not concatenating strings")
                 return left + right
             elif op in ("-", "*", "/", "%"):
-                if not isinstance(left, (int, float)) or not isinstance(right, (int, float)):
+                if not is_number(left) or not is_number(right):
                     raise TypeError(f"Operator '{op}' requires numbers")
                 if op == "-":
                     return left - right
@@ -211,14 +217,24 @@ class TacxIR:
                         raise ZeroDivisionError("Modulo by zero")
                     return left % right
             elif op in ("==", "!=", "<", ">", "<=", ">="):
-                if isinstance(left, (int, float)) and isinstance(right, (int, float)):
+                is_left_num = is_number(left)
+                is_right_num = is_number(right)
+
+                if op in ("==", "!="):
+                    return (left == right) if op == "==" else (left != right)
+
+                if is_left_num and is_right_num:
+                    lv, rv = left, right
+                elif type(left) is type(right) and isinstance(left, str):
+                    lv, rv = left, right
+                elif type(left) is type(right) and isinstance(left, bool):
                     lv, rv = left, right
                 else:
-                    lv, rv = str(left), str(right)
-                if op == "==":
-                    return lv == rv
-                if op == "!=":
-                    return lv != rv
+                    raise TypeError(
+                        f"Operator '{op}' requires comparable values of the same type, got "
+                        f"{type(left).__name__} and {type(right).__name__}"
+                    )
+
                 if op == "<":
                     return lv < rv
                 if op == ">":

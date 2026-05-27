@@ -134,7 +134,7 @@ Removes and returns the last element of the array `arr` (standard pop operation)
 Reports the runtime type classification of `x` as a readable string.
 * **Arguments**: Exactly 1.
 * **Return Values**:
-  * `khali` (if null/None)
+  * `khali` (if internal Python `None`; user-facing `khali` literal is not yet available in syntax)
   * `sotyo-mithya` (if Boolean)
   * `shonkha` (if integer or float)
   * `lekha` (if string)
