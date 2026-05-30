@@ -19,7 +19,8 @@ First off, thank you for taking the time to contribute to Tacx.IR! This document
 
 When contributing changes to the Tacx.IR language, please keep the following guidelines in mind:
 * **Focus & Simplicity**: Ensure code edits are focused and minimize unrelated changes.
-* **Syntax Integrity**: Preserve the original Banglish syntax and behavior. Any changes that affect existing syntax must be backward-compatible with [`v2strengthtext.tacx`](v2strengthtext.tacx).
+* **Syntax Integrity**: Preserve the original Banglish syntax and behavior. Any changes that affect existing syntax must be backward-compatible with [`v2strengthtext.tacx`](v2strengthtext.tacx). Keywords are matched case-insensitively; lowercase remains the canonical style.
+* **Shorthand Aliases**: New lowercase aliases such as `jtkhn` (while), `ar` (and), `ba` (or) are supported. Ensure documentation reflects these alternatives.
 * **Testing First**: No feature is considered complete until it is accompanied by corresponding unit tests inside [`test_tacxIR.py`](test_tacxIR.py).
 
 ---
@@ -52,12 +53,12 @@ graph TD
 Adding a new language feature or construct (for example, a new loop style, logical operator, or syntax sugar) is a structured process. Follow these 5 steps:
 
 ### Step 1: Declare the Lexer Token
-Open [`tacxir/tokens.py`](tacxir/tokens.py). Add the new token type name and regular expression pattern to `TOKEN_TYPES`. If it is a keyword, use the `keyword_pattern` helper to prevent partial matching.
+Open [`tacxir/tokens.py`](tacxir/tokens.py). Add the new token type name and regular expression pattern to `TOKEN_TYPES`. If it is a keyword, use the `keyword_pattern` helper to prevent partial matching. Write the canonical lowercase keyword form; the lexer normalizes mixed-case input.
 ```python
-# Example: Adding a "Koro" keyword
+# Example: Adding a "koro" keyword
 TOKEN_TYPES = [
     # ... other tokens ...
-    ("KORO", keyword_pattern("Koro")),
+    ("KORO", keyword_pattern("koro")),
     # ... other tokens ...
 ]
 ```
@@ -114,8 +115,8 @@ To maintain stability, the interpreter relies on specific error classes and exce
 ### 1. Control-Flow Exceptions
 We use Python exception bubbles to handle non-local runtime control transfer:
 * **`ReturnException(value)`**: Bubbles return values out of active function stacks.
-* **`BreakException`**: Bubbles break actions out of loop statements (`Thamo`).
-* **`ContinueException`**: Bubbles continue actions to the top of loops (`Chalano`).
+* **`BreakException`**: Bubbles break actions out of loop statements (`tham`).
+* **`ContinueException`**: Bubbles continue actions to the top of loops (`chal`).
 
 *Always wrap execution blocks with appropriate `try...except` filters to prevent these from leaking to global exit codes!*
 
@@ -124,7 +125,7 @@ Raise standard Python built-in error types to match the interpreter's error catc
 * Raise **`SyntaxError`** for invalid lexical tokens or structural syntax errors.
 * Raise **`TypeError`** for mismatched operand types (e.g. adding arrays and strings).
 * Raise **`ValueError`** for out-of-range value computations (e.g., negative loop counts).
-* Raise **`RuntimeError`** for general runtime anomalies (e.g., using `Ferot` outside a function).
+* Raise **`RuntimeError`** for general runtime anomalies (e.g., using `dao` outside a function).
 * Raise **`IndexError`** / **`NameError`** for bad array indexes and undefined variables.
 
 ---

@@ -2,27 +2,27 @@ import re
 
 
 def keyword_pattern(keyword: str) -> str:
-    return rf"{keyword}\b"
+    return rf"(?:{keyword})\b"
 
 
 TOKEN_TYPES = [
-    ("DHORI", keyword_pattern("Dhori")),
-    ("FEROT", keyword_pattern("Ferot")),
-    ("JOTOKHON", keyword_pattern("Jotokhon")),
-    ("THAMO", keyword_pattern("Thamo")),
-    ("CHALANO", keyword_pattern("Chalano")),
-    ("SOTYO", keyword_pattern("Sotyo")),
-    ("MITHYA", keyword_pattern("Mithya")),
-    ("EBONG", keyword_pattern("Ebong")),
-    ("OTHOBA", keyword_pattern("Othoba")),
-    ("NAILE", keyword_pattern("Naile")),
-    ("NA", keyword_pattern("Na")),
-    ("CHOLAO", keyword_pattern("Cholao")),
+    ("DHORI", keyword_pattern("dhori")),
+    ("FEROT", keyword_pattern("ferot")),
+    ("JOTOKHON", keyword_pattern("jtkhn|jotokhon")),
+    ("THAMO", keyword_pattern("tham|thamo")),
+    ("CHALANO", keyword_pattern("chal|chalano")),
+    ("SOTYO", keyword_pattern("sotyo")),
+    ("MITHYA", keyword_pattern("mithya")),
+    ("EBONG", keyword_pattern("ar|ebong")),
+    ("OTHOBA", keyword_pattern("ba|othoba")),
+    ("NAILE", keyword_pattern("naile")),
+    ("NA", keyword_pattern("na")),
+    ("CHOLAO", keyword_pattern("kor|cholao")),
     ("BAR", keyword_pattern("bar")),
-    ("JODI", keyword_pattern("Jodi")),
-    ("BOLO", keyword_pattern("Bolo")),
-    ("PORO", keyword_pattern("Poro")),
-    ("RAKHO", keyword_pattern("Rakho")),
+    ("JODI", keyword_pattern("jodi")),
+    ("BOLO", keyword_pattern("bolo")),
+    ("PORO", keyword_pattern("poro")),
+    ("RAKHO", keyword_pattern("rakho")),
     ("SKIP", r"[ \t\r\n]+"),
     ("COMMENT", r"//.*"),
     ("LPAREN", r"\("),
@@ -53,7 +53,12 @@ TOKEN_TYPES = [
 ]
 
 
-TOKEN_REGEX = "|".join(f"(?P<{name}>{pattern})" for name, pattern in TOKEN_TYPES)
+TOKEN_REGEX = re.compile("|".join(f"(?P<{name}>{pattern})" for name, pattern in TOKEN_TYPES), re.IGNORECASE)
+KEYWORD_TOKEN_TYPES = set()
+for name, _ in TOKEN_TYPES:
+    if name == "SKIP":
+        break
+    KEYWORD_TOKEN_TYPES.add(name)
 
 
 class Token:
@@ -77,14 +82,15 @@ def pos_to_linecol(code: str, pos: int):
 
 def tokenize(code: str):
     tokens = []
-    for mo in re.finditer(TOKEN_REGEX, code):
+    for mo in TOKEN_REGEX.finditer(code):
         kind = mo.lastgroup
         value = mo.group()
         if kind in ("SKIP", "COMMENT"):
             continue
+        if kind in KEYWORD_TOKEN_TYPES:
+            value = value.lower()
         if kind == "MISMATCH":
             line, col = pos_to_linecol(code, mo.start())
             raise SyntaxError(f"Unexpected character {value!r} at line {line}, column {col}")
         tokens.append(Token(kind, value, mo.start()))
     return tokens, code
-

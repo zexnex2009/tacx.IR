@@ -137,6 +137,15 @@ Rakho $nums = [1, 2, 3];
 Rakho $nums[5] = 7;
 """)
 
+    def test_block_scoped_locals_do_not_leak_from_conditionals(self):
+        with self.assertRaisesRegex(NameError, r"Variable '\$tmp' is not defined"):
+            execute_program("""
+jodi sotyo {
+    rakho $tmp = 10;
+}
+bolo $tmp;
+""")
+
     def test_logical_and_short_circuits(self):
         output = run_program('Bolo Mithya Ebong (1 / 0);')
         self.assertEqual(output, "False\n")
@@ -196,6 +205,10 @@ Bolo Dhoron(Sotyo);
     def test_number_comparison_does_not_treat_bool_as_number(self):
         with self.assertRaisesRegex(TypeError, "requires comparable values"):
             execute_program('Bolo Sotyo < 2;')
+
+    def test_boolean_ordered_comparison_is_rejected(self):
+        with self.assertRaisesRegex(TypeError, "requires comparable values"):
+            execute_program('Bolo Sotyo < Mithya;')
 
     def test_string_ordered_comparison_still_works(self):
         output = run_program('Bolo "a" < "b";')

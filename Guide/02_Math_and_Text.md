@@ -12,17 +12,17 @@ Tacx.IR can do math just like a calculator:
 *   `/` (Bhag / Divide)
 
 ```tacx
-Rakho $taka = 100 + 50;
-Bolo $taka; // This will say 150
+rakho $taka = 100 + 50;
+bolo $taka; // This will say 150
 ```
 
 You can even use variables in your math:
 
 ```tacx
-Rakho $egg_price = 12;
-Rakho $quantity = 4;
-Rakho $total = $egg_price * $quantity;
-Bolo $total; // This will say 48
+rakho $egg_price = 12;
+rakho $quantity = 4;
+rakho $total = $egg_price * $quantity;
+bolo $total; // This will say 48
 ```
 
 ## Mixing Text (Concatenation)
@@ -30,20 +30,20 @@ Bolo $total; // This will say 48
 You can also join pieces of text together using the `+` sign.
 
 ```tacx
-Rakho $name = "Zex";
-Bolo "Hello " + $name; // This will say: Hello Zex
+rakho $name = "Zex";
+bolo "Hello " + $name; // This will say: Hello Zex
 ```
 
 You can even join text and numbers:
 
 ```tacx
-Rakho $score = 100;
-Bolo "Your score is: " + $score; // This will say: Your score is: 100
+rakho $score = 100;
+bolo "Your score is: " + $score; // This will say: Your score is: 100
 ```
 
 ## Comparisons
 
-Sometimes you want to compare two things to see if they are the same or which one is bigger. This gives you a `Sotyo` (True) or `Mithya` (False) answer.
+Sometimes you want to compare two things to see if they are the same or which one is bigger. This gives you a `sotyo` (True) or `mithya` (False) answer.
 
 *   `==` (Is it equal?)
 *   `!=` (Is it NOT equal?)
@@ -51,8 +51,8 @@ Sometimes you want to compare two things to see if they are the same or which on
 *   `<` (Is it smaller?)
 
 ```tacx
-Bolo 10 > 5;  // Says: Sotyo
-Bolo 10 == 5; // Says: Mithya
+bolo 10 > 5;  // Says: sotyo
+bolo 10 == 5; // Says: mithya
 ```
 
 ---

@@ -41,9 +41,15 @@ class TacxIR:
         self.loop_depth = 0
         self.builtins: Dict[str, Callable[[List[Any]], Any]] = {
             "Lomba": self._builtin_lomba,
+            "lomba": self._builtin_lomba,
             "Dhukao": self._builtin_dhukao,
+            "dhukao": self._builtin_dhukao,
+            "dhuk": self._builtin_dhukao,
             "BerKoro": self._builtin_berkoro,
+            "berkoro": self._builtin_berkoro,
+            "berkr": self._builtin_berkoro,
             "Dhoron": self._builtin_dhoron,
+            "dhoron": self._builtin_dhoron,
         }
 
     def _get_var(self, name: str):
@@ -61,6 +67,21 @@ class TacxIR:
 
     def _declare_var(self, name: str, value):
         self.scopes[-1][name] = value
+
+    def _push_scope(self):
+        self.scopes.append({})
+
+    def _pop_scope(self):
+        if len(self.scopes) == 1:
+            raise RuntimeError("Cannot pop the global scope")
+        self.scopes.pop()
+
+    def _execute_block(self, stmts: List[StmtNode]):
+        self._push_scope()
+        try:
+            self.execute(stmts)
+        finally:
+            self._pop_scope()
 
     def _coerce_index(self, idx: Any) -> int:
         if isinstance(idx, bool) or not isinstance(idx, (int, float)):
@@ -190,9 +211,9 @@ class TacxIR:
         if isinstance(node, BinOpNode):
             left = self.eval_expr(node.left)
             op = node.op
-            if op == "Ebong":
+            if op in ("ebong", "ar"):
                 return is_truthy(left) and is_truthy(self.eval_expr(node.right))
-            if op == "Othoba":
+            if op in ("othoba", "ba"):
                 return is_truthy(left) or is_truthy(self.eval_expr(node.right))
             right = self.eval_expr(node.right)
             if op == "+":
@@ -226,8 +247,6 @@ class TacxIR:
                 if is_left_num and is_right_num:
                     lv, rv = left, right
                 elif type(left) is type(right) and isinstance(left, str):
-                    lv, rv = left, right
-                elif type(left) is type(right) and isinstance(left, bool):
                     lv, rv = left, right
                 else:
                     raise TypeError(
@@ -265,9 +284,9 @@ class TacxIR:
                 self._assign_target(stmt.target, self.eval_expr(stmt.expr))
             elif isinstance(stmt, JodiStmt):
                 if is_truthy(self.eval_expr(stmt.cond)):
-                    self.execute(stmt.true_body)
+                    self._execute_block(stmt.true_body)
                 elif stmt.false_body:
-                    self.execute(stmt.false_body)
+                    self._execute_block(stmt.false_body)
             elif isinstance(stmt, CholaoStmt):
                 count = self.eval_expr(stmt.count)
                 if isinstance(count, bool) or not isinstance(count, (int, float)):
@@ -280,7 +299,7 @@ class TacxIR:
                 try:
                     for _ in range(int(count)):
                         try:
-                            self.execute(stmt.body)
+                            self._execute_block(stmt.body)
                         except BreakException:
                             break
                         except ContinueException:
@@ -292,7 +311,7 @@ class TacxIR:
                 try:
                     while is_truthy(self.eval_expr(stmt.cond)):
                         try:
-                            self.execute(stmt.body)
+                            self._execute_block(stmt.body)
                         except BreakException:
                             break
                         except ContinueException:

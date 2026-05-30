@@ -27,9 +27,9 @@ Below is the verified layout of the Tacx.IR project directory, mapping the relat
 ├── CONTRIBUTING.md              # Extensive compiler workflow and code-standard guidelines
 ├── PROJECT_STRUCTURE.md         # [This File] Architectural blueprints and data flow
 ├── README.md                    # Core language reference, cheat sheet, and user manual
-├── ROADMAP.md                   # 5-step strategic language improvements and designs
+├── ROADMAP.md                   # Strategic language improvements and designs
 ├── tacxIR.py                    # Root entrypoint maintaining legacy backward-compatibility
-├── test_tacxIR.py               # 23-stage regression test suite for robust validation
+├── test_tacxIR.py               # Regression test suite for robust validation
 ├── v2strengthtext.tacx          # Full-scale language strength validation script
 └── tacxir/                      # Core Compiler & Interpreter Package
     ├── __init__.py              # Package init exporting clean, targeted public APIs
@@ -90,7 +90,7 @@ graph TD
 
 #### [`tacxir/tokens.py`](tacxir/tokens.py) (The Lexer)
 * **Role**: Lexical scanning and tokenization.
-* **Details**: Stores `TOKEN_TYPES` matching string patterns into concrete `Token` instances. Automatically maps position indices to row/column coordinate offsets for runtime syntax messaging.
+* **Details**: Stores `TOKEN_TYPES` matching string patterns into concrete `Token` instances. Automatically maps position indices to row/column coordinate offsets for runtime syntax messaging. **Keyword tokens are matched case-insensitively and normalized to lowercase values.**
 
 #### [`tacxir/ast_nodes.py`](tacxir/ast_nodes.py) (The AST)
 * **Role**: Abstract syntax node definitions.

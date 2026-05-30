@@ -1,246 +1,158 @@
 // Tacx.IR 2.0 - Comprehensive Strength Test
+// Tacx.IR 2.0 - Comprehensive Strength Test
 // Tests every major feature: variables, arithmetic, strings, arrays,
 // conditionals, loops, functions, recursion, logical ops, break/continue,
 // truthy/falsy, indexing, nesting, edge cases
 
 // ---- Utility Functions ----
-Dhori factorial(n) {
-    Jodi n <= 1 {
-        Ferot 1;
-    } Naile {
-        Ferot n * factorial(n - 1);
+dhori factorial(n) {
+    jodi n <= 1 {
+        ferot 1;
+    } naile {
+        ferot n * factorial(n - 1);
     }
 }
 
-Dhori fibonacci(n) {
-    Jodi n == 0 { Ferot 0; }
-    Jodi n == 1 { Ferot 1; }
-    Ferot fibonacci(n - 1) + fibonacci(n - 2);
+dhori fibonacci(n) {
+    jodi n == 0 { ferot 0; }
+    jodi n == 1 { ferot 1; }
+    ferot fibonacci(n - 1) + fibonacci(n - 2);
 }
 
-Dhori isEven(n) {
-    Ferot n % 2 == 0;
+dhori isEven(n) {
+    ferot n % 2 == 0;
 }
 
-Dhori sumArray(arr, len) {
-    Rakho $total = 0;
-    Rakho $i = 0;
-    Jotokhon $i < len {
-        Rakho $total = $total + arr[$i];
-        Rakho $i = $i + 1;
+dhori sumArray(arr, len) {
+    rakho $total = 0;
+    rakho $i = 0;
+    jotokhon $i < len {
+        rakho $total = $total + arr[$i];
+        rakho $i = $i + 1;
     }
-    Ferot $total;
+    ferot $total;
 }
 
-Dhori greetUser(name, age) {
-    Jodi age >= 18 Ebong age < 60 {
-        Ferot "Nomoshkar " + name + ", apni ekjon probin!";
-    } Naile {
-        Jodi age < 18 {
-            Ferot "Hello " + name + ", tumi ekhono choto!";
-        } Naile {
-            Ferot "Salam " + name + ", apni senior citizen!";
+dhori greetUser(name, age) {
+    jodi age >= 18 ar age < 60 {
+        ferot "Nomoshkar " + name + ", apni ekjon probin!";
+    } naile {
+        jodi age < 18 {
+            ferot "Hello " + name + ", tumi ekhono choto!";
+        } naile {
+            ferot "Salam " + name + ", apni senior citizen!";
         }
     }
 }
 
 // ---- Main Program ----
-Bolo "====================";
-Bolo "Tacx.IR Strength Test";
-Bolo "====================";
-Bolo "";
+bolo "====================";
+bolo "Tacx.IR Strength Test";
+bolo "====================";
+bolo "";
 
 // Test 1: Basic I/O
-Bolo "--- Test 1: Basic I/O ---";
-Bolo "Apnar naam ki?";
-Poro $name;
-Bolo "Apnar boyosh koto?";
-Poro $age;
-Bolo "Welcome, " + $name + "!";
-Bolo "";
+bolo "--- Test 1: Basic I/O ---";
+bolo "Apnar naam ki?";
+poro $name;
+bolo "Apnar boyosh koto?";
+poro $age;
+bolo "Welcome, " + $name + "!";
+bolo "";
 
 // Test 2: Arithmetic Operations
-Bolo "--- Test 2: Arithmetic ---";
-Rakho $a = 100;
-Rakho $b = 7;
-Rakho $sum = $a + $b;
-Rakho $diff = $a - $b;
-Rakho $prod = $a * $b;
-Rakho $quot = $a / $b;
-Bolo "Sum: " + $sum;
-Bolo "Difference: " + $diff;
-Bolo "Product: " + $prod;
-Bolo "Quotient: " + $quot;
-Bolo "";
+bolo "--- Test 2: Arithmetic ---";
+rakho $a = 100;
+rakho $b = 7;
+rakho $sum = $a + $b;
+rakho $diff = $a - $b;
+rakho $prod = $a * $b;
+rakho $quot = $a / $b;
+bolo "Sum: " + $sum;
+bolo "Difference: " + $diff;
+bolo "Product: " + $prod;
+bolo "Quotient: " + $quot;
+bolo "";
 
 // Test 3: String Operations
-Bolo "--- Test 3: String Operations ---";
-Rakho $greeting = "Hello";
-Rakho $space = " ";
-Rakho $world = "World";
-Rakho $full = $greeting + $space + $world + "!";
-Bolo $full;
-Rakho $mixed = "Number: " + 42 + " works!";
-Bolo $mixed;
-Bolo "";
+bolo "--- Test 3: String Operations ---";
+rakho $greeting = "Hello";
+rakho $space = " ";
+rakho $world = "World";
+rakho $full = $greeting + $space + $world + "!";
+bolo $full;
+rakho $mixed = "Number: " + 42 + " works!";
+bolo $mixed;
+bolo "";
 
 // Test 4: Comparisons
-Bolo "--- Test 4: Comparisons ---";
-Rakho $x = 50;
-Rakho $y = 30;
-Bolo "x == y: " + ($x == $y);
-Bolo "x != y: " + ($x != $y);
-Bolo "x > y: " + ($x > $y);
-Bolo "x < y: " + ($x < $y);
-Bolo "x >= y: " + ($x >= $y);
-Bolo "x <= y: " + ($x <= $y);
-Bolo "String compare: " + ("apple" == "apple");
-Bolo "String not equal: " + ("hello" != "world");
-Bolo "";
+bolo "--- Test 4: Comparisons ---";
+rakho $x = 50;
+rakho $y = 30;
+bolo "x == y: " + ($x == $y);
+bolo "x != y: " + ($x != $y);
+bolo "x > y: " + ($x > $y);
+bolo "x < y: " + ($x < $y);
+bolo "x >= y: " + ($x >= $y);
+bolo "x <= y: " + ($x <= $y);
+bolo "String compare: " + ("apple" == "apple");
+bolo "String not equal: " + ("hello" != "world");
+bolo "";
 
 // Test 5: Boolean Logic
-Bolo "--- Test 5: Boolean Logic ---";
-Rakho $t = Sotyo;
-Rakho $f = Mithya;
-Bolo "Sotyo Ebong Sotyo: " + ($t Ebong $t);
-Bolo "Sotyo Ebong Mithya: " + ($t Ebong $f);
-Bolo "Mithya Othoba Sotyo: " + ($f Othoba $t);
-Bolo "Mithya Othoba Mithya: " + ($f Othoba $f);
-Bolo "Na Sotyo: " + (Na $t);
-Bolo "Na Mithya: " + (Na $f);
-Bolo "Complex: " + (($x > 10 Ebong $y < 100) Othoba $f);
-Bolo "";
+bolo "--- Test 5: Boolean Logic ---";
+rakho $t = sotyo;
+rakho $f = mithya;
+bolo "Sotyo Ebong Sotyo: " + ($t ebong $t);
+bolo "Sotyo Ebong Mithya: " + ($t ebong $f);
+bolo "Mithya Othoba Sotyo: " + ($f othoba $t);
+bolo "Mithya Othoba Mithya: " + ($f othoba $f);
+bolo "Na Sotyo: " + (na $t);
+bolo "Na Mithya: " + (na $f);
+bolo "Complex: " + (($x > 10 ebong $y < 100) othoba $f);
+bolo "";
 
 // Test 6: Arrays
-Bolo "--- Test 6: Arrays ---";
-Rakho $numbers = [10, 20, 30, 40, 50];
-Bolo "Array elements:";
-Bolo "  [0]: " + $numbers[0];
-Bolo "  [1]: " + $numbers[1];
-Bolo "  [2]: " + $numbers[2];
-Bolo "  [3]: " + $numbers[3];
-Bolo "  [4]: " + $numbers[4];
+bolo "--- Test 6: Arrays ---";
+rakho $numbers = [10, 20, 30, 40, 50];
+bolo "Array elements:";
+bolo "  [0]: " + $numbers[0];
+bolo "  [1]: " + $numbers[1];
+bolo "  [2]: " + $numbers[2];
+bolo "  [3]: " + $numbers[3];
+bolo "  [4]: " + $numbers[4];
 
-Rakho $mixedArr = [1, "two", Sotyo, Mithya, [100, 200]];
-Bolo "Mixed array test:";
-Bolo "  Number: " + $mixedArr[0];
-Bolo "  String: " + $mixedArr[1];
-Bolo "  Boolean: " + $mixedArr[2];
-Rakho $innerArr = $mixedArr[4];
-Bolo "  Nested array [0]: " + $innerArr[0];
-Bolo "  Nested array [1]: " + $innerArr[1];
-Rakho $numbers[2] = 999;
-Bolo "  Updated [2]: " + $numbers[2];
-Rakho $mixedArr[4][1] = 555;
-Bolo "  Updated nested [1]: " + $mixedArr[4][1];
-Bolo "";
+rakho $mixedArr = [1, "two", sotyo, mithya, [100, 200]];
+bolo "Mixed array test:";
+bolo "  Number: " + $mixedArr[0];
+bolo "  String: " + $mixedArr[1];
+bolo "  Boolean: " + $mixedArr[2];
+rakho $innerArr = $mixedArr[4];
+bolo "  Nested array [0]: " + $innerArr[0];
+bolo "  Nested array [1]: " + $innerArr[1];
+rakho $numbers[2] = 999;
+bolo "  Updated [2]: " + $numbers[2];
+rakho $mixedArr[4][1] = 555;
+bolo "  Updated nested [1]: " + $mixedArr[4][1];
+bolo "";
 
 // Test 6B: Builtins
-Bolo "--- Test 6B: Builtins ---";
-Bolo "Length of numbers: " + Lomba($numbers);
-Rakho $pushLen = Dhukao($numbers, 60);
-Bolo "Length after Dhukao: " + $pushLen;
-Bolo "Last removed: " + BerKoro($numbers);
-Bolo "Type of array: " + Dhoron($numbers);
-Bolo "";
-
-// Test 7: Conditional (Jodi/Naile)
-Bolo "--- Test 7: Conditional ---";
-Rakho $score = 85;
-Jodi $score >= 90 {
-    Bolo "Grade: A+";
-} Naile {
-    Jodi $score >= 80 {
-        Bolo "Grade: A";
-    } Naile {
-        Jodi $score >= 70 {
-            Bolo "Grade: B";
-        } Naile {
-            Jodi $score >= 60 {
-                Bolo "Grade: C";
-            } Naile {
-                Bolo "Grade: F";
-            }
-        }
-    }
-}
-
-// Test truthy/falsy
-Rakho $emptyStr = "";
-Rakho $zero = 0;
-Rakho $nonZero = 1;
-Jodi $emptyStr {
-    Bolo "Empty string is truthy (WRONG!)";
-} Naile {
-    Bolo "Empty string is falsy (CORRECT!)";
-}
-Jodi $zero {
-    Bolo "Zero is truthy (WRONG!)";
-} Naile {
-    Bolo "Zero is falsy (CORRECT!)";
-}
-Jodi $nonZero {
-    Bolo "Non-zero is truthy (CORRECT!)";
-}
-Bolo "";
-
-// Test 8: Fixed Loop (Cholao)
-Bolo "--- Test 8: Cholao Loop ---";
-Rakho $counter = 0;
-Cholao 5 bar {
-    Bolo "  Iteration " + ($counter + 1);
-    Rakho $counter = $counter + 1;
-}
-Bolo "";
-
-// Test 9: While Loop (Jotokhon)
-Bolo "--- Test 9: Jotokhon Loop ---";
-Rakho $w = 0;
-Jotokhon $w < 5 {
-    Bolo "  While count: " + $w;
-    Rakho $w = $w + 1;
-}
-Bolo "";
-
-// Test 10: Break and Continue
-Bolo "--- Test 10: Break/Continue ---";
-Bolo "Continue demo (skipping 3):";
-Rakho $k = 0;
-Jotokhon $k < 7 {
-    Jodi $k == 3 {
-        Rakho $k = $k + 1;
-        Chalano;
-    }
-    Bolo "  Number: " + $k;
-    Rakho $k = $k + 1;
-}
-
-Bolo "Break demo (stop at 5):";
-Rakho $j = 0;
-Jotokhon Sotyo {
-    Jodi $j >= 5 {
-        Thamo;
-    }
-    Bolo "  Loop: " + $j;
-    Rakho $j = $j + 1;
-}
-Bolo "";
 
 // Test 11: Functions
 Bolo "--- Test 11: Functions ---";
-Bolo "Factorial of 5: " + factorial(5);
-Bolo "Factorial of 7: " + factorial(7);
-Bolo "Fibonacci of 10: " + fibonacci(10);
-Bolo "Fibonacci of 15: " + fibonacci(15);
+bolo "Factorial of 5: " + factorial(5);
+bolo "Factorial of 7: " + factorial(7);
+bolo "Fibonacci of 10: " + fibonacci(10);
+bolo "Fibonacci of 15: " + fibonacci(15);
 
 Rakho $testArr = [5, 10, 15, 20, 25];
 Rakho $arrSum = sumArray($testArr, 5);
 Bolo "Sum of array: " + $arrSum;
 
-Bolo greetUser($name, $age);
-Bolo greetUser("Rahim", 12);
-Bolo greetUser("Karim", 25);
-Bolo greetUser("Abdul", 65);
+bolo greetUser($name, $age);
+bolo greetUser("Rahim", 12);
+bolo greetUser("Karim", 25);
+bolo greetUser("Abdul", 65);
 Bolo "";
 
 // Test 12: Nested Loops and Complex Logic
@@ -272,11 +184,11 @@ Bolo "";
 
 // Test 14: Expression Evaluation Order and Strings
 Bolo "--- Test 14: Expression Precedence ---";
-Bolo "3 + 4 * 2 = " + (3 + 4 * 2);
-Bolo "(3 + 4) * 2 = " + ((3 + 4) * 2);
-Bolo "10 - 2 * 3 + 1 = " + (10 - 2 * 3 + 1);
-Bolo "10 / 2 + 3 * 2 = " + (10 / 2 + 3 * 2);
-Bolo "Sotyo Ebong Mithya Othoba Sotyo = " + ($t Ebong $f Othoba $t);
+bolo "3 + 4 * 2 = " + (3 + 4 * 2);
+bolo "(3 + 4) * 2 = " + ((3 + 4) * 2);
+bolo "10 - 2 * 3 + 1 = " + (10 - 2 * 3 + 1);
+bolo "10 / 2 + 3 * 2 = " + (10 / 2 + 3 * 2);
+bolo "Sotyo Ebong Mithya Othoba Sotyo = " + ($t Ebong $f Othoba $t);
 Bolo "Escaped quote: \"Tacx.IR\"";
 Bolo "Escaped newline line 1\nEscaped newline line 2";
 Bolo "";

@@ -2,28 +2,28 @@
 
 Computers are great at doing the same thing over and over again without getting tired. We call this a **Loop**.
 
-## 1. Repeating a fixed number of times (`Cholao`)
+## 1. Repeating a fixed number of times (`kor`)
 
-If you know exactly how many times you want to do something, use **`Cholao`** (Run/Drive) ... **`bar`** (times).
+If you know exactly how many times you want to do something, use **`kor`** (Run/Drive/Do) ... **`bar`** (times).
 
 ```tacx
-Cholao 5 bar {
-    Bolo "Ami bhat khabo";
+kor 5 bar {
+    bolo "Ami bhat khabo";
 }
 ```
 
 This will print "Ami bhat khabo" 5 times.
 
-## 2. Repeating while something is true (`Jotokhon`)
+## 2. Repeating while something is true (`jtkhn`)
 
-Sometimes you want to keep going **`Jotokhon`** (As long as) a condition is true.
+Sometimes you want to keep going **`jtkhn`** (As long as) a condition is true.
 
 ```tacx
-Rakho $count = 1;
+rakho $count = 1;
 
-Jotokhon $count <= 5 {
-    Bolo "Count is: " + $count;
-    Rakho $count = $count + 1; // Increase the count by 1
+jtkhn $count <= 5 {
+    bolo "Count is: " + $count;
+    rakho $count = $count + 1; // Increase the count by 1
 }
 ```
 
@@ -36,17 +36,17 @@ Jotokhon $count <= 5 {
 
 ## Stopping or Skipping
 
-*   **`Thamo`** (Stop/Break): Immediately stops the loop.
-*   **`Chalano`** (Continue): Skips the rest of the current turn and starts the next turn of the loop.
+*   **`tham`** (Stop/Break): Immediately stops the loop.
+*   **`chal`** (Continue): Skips the rest of the current turn and starts the next turn of the loop.
 
 ```tacx
-Rakho $i = 1;
-Jotokhon $i < 10 {
-    Jodi $i == 5 {
-        Thamo; // Stop when i is 5
+rakho $i = 1;
+jtkhn $i < 10 {
+    jodi $i == 5 {
+        tham; // Stop when i is 5
     }
-    Bolo $i;
-    Rakho $i = $i + 1;
+    bolo $i;
+    rakho $i = $i + 1;
 }
 ```
 

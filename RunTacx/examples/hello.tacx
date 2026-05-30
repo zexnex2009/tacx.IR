@@ -1,0 +1,4 @@
+bolo "Hello from RunTacx!";
+rakho $name = "Tacx";
+bolo "Language: " + $name;
+

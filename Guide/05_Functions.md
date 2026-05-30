@@ -2,13 +2,13 @@
 
 A **Function** is like a recipe. You give it a name and a set of instructions. Later, you can just call the name to run all those instructions at once.
 
-## Creating a Function (`Dhori`)
+## Creating a Function (`dhori`)
 
-In Tacx.IR, we use **`Dhori`** (Let's assume/Define) to make a function.
+In Tacx.IR, we use **`dhori`** (Let's assume/Define) to make a function.
 
 ```tacx
-Dhori baniye_bolo(naam) {
-    Bolo "Hello " + naam + ", kemon achen?";
+dhori baniye_bolo(naam) {
+    bolo "Hello " + naam + ", kemon achen?";
 }
 ```
 
@@ -25,17 +25,17 @@ baniye_bolo("Sagor");
 baniye_bolo("Anika");
 ```
 
-## Giving back a value (`Ferot`)
+## Giving back a value (`dao`)
 
-Sometimes a function does a calculation and needs to give the answer back to you. We use **`Ferot`** (Return).
+Sometimes a function does a calculation and needs to give the answer back to you. We use **`dao`** (Return/Give).
 
 ```tacx
-Dhori jog_koro(a, b) {
-    Ferot a + b;
+dhori jog_koro(a, b) {
+    dao a + b;
 }
 
-Rakho $result = jog_koro(10, 20);
-Bolo $result; // Says 30
+rakho $result = jog_koro(10, 20);
+bolo $result; // Says 30
 ```
 
 ## Why use functions?

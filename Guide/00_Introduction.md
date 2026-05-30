@@ -8,8 +8,10 @@ Welcome to the world of programming! If you've never written a line of code befo
 
 Imagine you are talking to a very literal-minded robot. In most programming languages, you have to speak "Robot-ish" (like `let x = 10` or `print("Hello")`). In Tacx.IR, you talk to the robot in a way that feels more natural if you know Banglish!
 
-Instead of `print`, we say **`Bolo`** (Tell/Say).
-Instead of `if`, we say **`Jodi`** (If).
+**Note: Tacx.IR keywords are matched case-insensitively; lowercase remains the canonical style.**
+
+Instead of `print`, we say **`bolo`** (Tell/Say).
+Instead of `if`, we say **`jodi`** (If).
 
 ## Why learn to program?
 

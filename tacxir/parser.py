@@ -191,7 +191,10 @@ class Parser:
             return BoloStmt(expr)
         elif tok.type == "PORO":
             self.consume("PORO")
-            var = self.consume("VAR") if self.peek().type == "VAR" else self.consume("ID")
+            next_tok = self.peek()
+            if next_tok is None or next_tok.type not in ("VAR", "ID"):
+                self._error("Expected variable or identifier after Poro", next_tok)
+            var = self.consume()
             self.consume("SEMI")
             return PoroStmt(var.value)
         elif tok.type == "RAKHO":
@@ -276,4 +279,3 @@ class Parser:
             if stmt is not None:
                 program.append(stmt)
         return program
-

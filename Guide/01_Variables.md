@@ -4,13 +4,13 @@ In programming, a **Variable** is like a box. You can put a value inside it, giv
 
 ## How to create a Variable
 
-In Tacx.IR, we use the word **`Rakho`** (Keep/Put) to save something into a variable. 
+In Tacx.IR, we use the word **`rakho`** (Keep/Put) to save something into a variable. 
 
 Variable names in Tacx.IR always start with a dollar sign (**`$`**).
 
 ```tacx
-Rakho $naam = "Anis";
-Rakho $boyosh = 20;
+rakho $naam = "Anis";
+rakho $boyosh = 20;
 ```
 
 In the code above:
@@ -19,10 +19,10 @@ In the code above:
 
 ## Showing the value
 
-To see what's inside a variable, we use **`Bolo`** (Say/Tell).
+To see what's inside a variable, we use **`bolo`** (Say/Tell).
 
 ```tacx
-Bolo $naam;
+bolo $naam;
 ```
 The computer will look inside the box `$naam` and print **Anis**.
 
@@ -33,18 +33,18 @@ You can put different things in your boxes:
 1.  **Numbers**: `10`, `3.5`, `-5`
 2.  **Text (Strings)**: Always put these in quotes, like `"Hello"`.
 3.  **Yes/No (Booleans)**: 
-    *   **`Sotyo`** (True/Correct)
-    *   **`Mithya`** (False/Incorrect)
+    *   **`sotyo`** (True/Correct)
+    *   **`mithya`** (False/Incorrect)
 
 ## Try it out!
 
 Try writing this in a file:
 
 ```tacx
-Rakho $am = 5;
-Rakho $jam = 10;
-Bolo $am;
-Bolo $jam;
+rakho $am = 5;
+rakho $jam = 10;
+bolo $am;
+bolo $jam;
 ```
 
 When you run this, the computer will tell you `5` and then `10`.

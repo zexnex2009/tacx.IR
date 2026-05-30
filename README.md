@@ -7,6 +7,8 @@
 > **Tacx.IR** is a modern, lightweight, dynamic programming language featuring syntax inspired by **Banglish** (conversational Bengali transliterated to Latin script). It compiles to a clean Abstract Syntax Tree (AST) and is evaluated by an optimized Python-based recursive-descent interpreter.
 >
 > Designed to combine the charm of everyday language with rigorous compiler design, Tacx.IR offers full support for variables, complex arrays, structured control flow, functions, and powerful built-in functions.
+>
+> **Note: Tacx.IR keywords are matched case-insensitively; lowercase remains the canonical style.**
 
 ---
 
@@ -29,6 +31,7 @@
 * **Banglish Grammar**: Logical operations, variables, conditionals, and loops map directly to common Banglish phrases.
 * **Robust Type System**: Includes dynamic types for strings, floats, integers, boolean literals, and multi-dimensional arrays.
 * **Array Mutation**: Supports indexing, multi-dimensional list reading/writing, appending, and popping.
+* **Block-Local Scopes**: Conditional and loop bodies get their own local scope, so temporary values do not leak outward.
 * **Short-Circuit Logic**: Short-circuits conditional evaluations for performance and safety.
 * **Command Line Diagnostics**: Provides detailed debug options to dump token streams or print a fully indented AST tree.
 
@@ -38,22 +41,22 @@
 
 | Banglish Keyword | Standard Equivalent | Category | Description | Example |
 | :--- | :--- | :--- | :--- | :--- |
-| **`Rakho`** | `let` / `=` | Assignment | Declares or reassigns a variable or index | `Rakho $x = 10;` |
-| **`Bolo`** | `print` | Output | Evaluates and prints to standard output | `Bolo "Hello World";` |
-| **`Poro`** | `input` | Input | Reads input and infers type (number/string) | `Poro $age;` |
-| **`Jodi`** | `if` | Conditional | Starts a conditional block | `Jodi $x > 5 { ... }` |
-| **`Naile`** | `else` | Conditional | Defines the fallback branch of a conditional | `Naile { ... }` |
-| **`Cholao` ... `bar`**| `repeat` | Loop | Executes a block a fixed number of times | `Cholao 5 bar { ... }` |
-| **`Jotokhon`** | `while` | Loop | Executes a block while condition remains truthy| `Jotokhon $i < 5 { ... }` |
-| **`Dhori`** | `function` | Declaration | Declares a new callable function | `Dhori add(a, b) { ... }`|
-| **`Ferot`** | `return` | Control Flow | Returns a value from a function | `Ferot a + b;` |
-| **`Thamo`** | `break` | Control Flow | Immediately exits the innermost loop | `Thamo;` |
-| **`Chalano`** | `continue` | Control Flow | Jumps to the next iteration of the loop | `Chalano;` |
-| **`Sotyo`** | `True` | Literal | Boolean True literal | `Rakho $ok = Sotyo;` |
-| **`Mithya`** | `False` | Literal | Boolean False literal | `Rakho $fail = Mithya;` |
-| **`Ebong`** | `and` | Operator | Short-circuiting logical AND | `$x Ebong $y` |
-| **`Othoba`** | `or` | Operator | Short-circuiting logical OR | `$x Othoba $y` |
-| **`Na`** | `not` | Operator | Unary logical negation (NOT) | `Na $x` |
+| **`rakho`** | `let` / `=` | Assignment | Declares or reassigns a variable or index | `rakho $x = 10;` |
+| **`bolo`** | `print` | Output | Evaluates and prints to standard output | `bolo "hello world";` |
+| **`poro`** | `input` | Input | Reads input and infers type (number/string) | `poro $age;` |
+| **`jodi`** | `if` | Conditional | Starts a conditional block | `jodi $x > 5 { ... }` |
+| **`naile`** | `else` | Conditional | Defines the fallback branch of a conditional | `naile { ... }` |
+| **`kor`** ... `bar`| `repeat` | Loop | Executes a block a fixed number of times | `kor 5 bar { ... }` |
+| **`jtkhn`** | `while` | Loop | Executes a block while condition remains truthy| `jtkhn $i < 5 { ... }` |
+| **`dhori`** | `function` | Declaration | Declares a new callable function | `dhori add(a, b) { ... }`|
+| **`dao`** | `return` | Control Flow | Returns a value from a function | `dao a + b;` |
+| **`tham`** | `break` | Control Flow | Immediately exits the innermost loop | `tham;` |
+| **`chal`** | `continue` | Control Flow | Jumps to the next iteration of the loop | `chal;` |
+| **`sotyo`** | `True` | Literal | Boolean True literal | `rakho $ok = sotyo;` |
+| **`mithya`** | `False` | Literal | Boolean False literal | `rakho $fail = mithya;` |
+| **`ar`** | `and` | Operator | Short-circuiting logical AND | `$x ar $y` |
+| **`ba`** | `or` | Operator | Short-circuiting logical OR | `$x ba $y` |
+| **`na`** | `not` | Operator | Unary logical negation (NOT) | `na $x` |
 
 ---
 
@@ -68,23 +71,23 @@ Represents both integers and floating-point values.
 ### 2. Strings (`lekha`)
 Double-quoted Unicode text. Fully supports standard escapes:
 * `\n` (newline), `\t` (horizontal tab), `\r` (carriage return), `\"` (double quote), and `\\` (backslash).
-* *Example:* `"Hello\nWorld"`
+* *Example:* `"hello\nworld"`
 
 ### 3. Booleans (`sotyo-mithya`)
 Represented by the keyword literals:
-* `Sotyo` (logical true)
-* `Mithya` (logical false)
+* `sotyo` (logical true)
+* `mithya` (logical false)
 
 ### 4. Arrays (`talika`)
 Mutable, dynamic lists containing any mixture of data types, including nested lists.
-* *Literal notation:* `[1, "two", Sotyo, [100, 200]]`
+* *Literal notation:* `[1, "two", sotyo, [100, 200]]`
 * *Indexing (0-based):* `$arr[0]`
 * *Nested Indexing:* `$arr[3][1]` (evaluates to `200`)
-* *Assignment:* `Rakho $arr[1] = "new_val";`
+* *Assignment:* `rakho $arr[1] = "new_val";`
 
 ### 5. Falsy/Truthy Rules
 The following values are evaluated as **falsy** by conditional structures:
-* `Mithya` (Boolean False)
+* `mithya` (Boolean False)
 * `0` and `0.0` (Numeric zero)
 * `""` (Empty string)
 * `[]` (Empty array)
@@ -95,42 +98,42 @@ All other values are evaluated as **truthy**.
 
 ## 🛠️ Built-In Functions
 
-Tacx.IR includes four built-in utility functions for essential computations:
+Tacx.IR includes utility functions for essential computations:
 
-### 1. `Lomba(x)`
+### 1. `lomba(x)`
 Returns the length of a string or array.
 * **Arguments**: Exactly 1.
 * **Errors**: `TypeError` if `x` is not a string or array.
 * **Example**:
   ```tacx
-  Rakho $myList = [1, 2, 3];
-  Bolo Lomba($myList); // Prints 3
-  Bolo Lomba("Banglish"); // Prints 8
+  rakho $myList = [1, 2, 3];
+  bolo lomba($myList); // Prints 3
+  bolo lomba("banglish"); // Prints 8
   ```
 
-### 2. `Dhukao(arr, value)`
+### 2. `dhuk(arr, value)`
 Appends `value` to the end of the mutable array `arr`. Returns the **new length** of the array.
 * **Arguments**: Exactly 2 (an array and the value to append).
 * **Errors**: `TypeError` if the first argument is not an array.
 * **Example**:
   ```tacx
-  Rakho $arr = [10];
-  Rakho $newLen = Dhukao($arr, 20); // $arr is now [10, 20]
-  Bolo $newLen; // Prints 2
+  rakho $arr = [10];
+  rakho $newLen = dhuk($arr, 20); // $arr is now [10, 20]
+  bolo $newLen; // Prints 2
   ```
 
-### 3. `BerKoro(arr)`
+### 3. `berkr(arr)`
 Removes and returns the last element of the array `arr` (standard pop operation).
 * **Arguments**: Exactly 1.
 * **Errors**: `TypeError` if not an array, `RuntimeError` if the array is empty.
 * **Example**:
   ```tacx
-  Rakho $arr = [1, 2, 99];
-  Rakho $lastVal = BerKoro($arr); // $arr is now [1, 2]
-  Bolo $lastVal; // Prints 99
+  rakho $arr = [1, 2, 99];
+  rakho $lastVal = berkr($arr); // $arr is now [1, 2]
+  bolo $lastVal; // Prints 99
   ```
 
-### 4. `Dhoron(x)`
+### 4. `dhron(x)`
 Reports the runtime type classification of `x` as a readable string.
 * **Arguments**: Exactly 1.
 * **Return Values**:
@@ -142,9 +145,9 @@ Reports the runtime type classification of `x` as a readable string.
   * Otherwise, returns the internal Python class name.
 * **Example**:
   ```tacx
-  Bolo Dhoron(10.5);       // Prints "shonkha"
-  Bolo Dhoron("test");     // Prints "lekha"
-  Bolo Dhoron(Mithya);     // Prints "sotyo-mithya"
+  bolo dhron(10.5);       // Prints "shonkha"
+  bolo dhron("test");     // Prints "lekha"
+  bolo dhron(mithya);     // Prints "sotyo-mithya"
   ```
 
 ---
@@ -154,49 +157,49 @@ Reports the runtime type classification of `x` as a readable string.
 ### 🔁 Fibonacci Sequence (Recursion & Conditions)
 ```tacx
 // Recursive Fibonacci function
-Dhori fibonacci(n) {
-    Jodi n == 0 { Ferot 0; }
-    Jodi n == 1 { Ferot 1; }
-    Ferot fibonacci(n - 1) + fibonacci(n - 2);
+dhori fibonacci(n) {
+    jodi n == 0 { dao 0; }
+    jodi n == 1 { dao 1; }
+    dao fibonacci(n - 1) + fibonacci(n - 2);
 }
 
-Bolo "Fibonacci of 10 is:";
-Bolo fibonacci(10); // Prints 55
+bolo "fibonacci of 10 is:";
+bolo fibonacci(10); // Prints 55
 ```
 
 ### 🏎️ Complex Array & Loop Summation
 ```tacx
-Dhori sumArray(arr, len) {
-    Rakho $total = 0;
-    Rakho $i = 0;
-    Jotokhon $i < len {
-        Rakho $total = $total + arr[$i];
-        Rakho $i = $i + 1;
+dhori sumArray(arr, len) {
+    rakho $total = 0;
+    rakho $i = 0;
+    jtkhn $i < len {
+        rakho $total = $total + arr[$i];
+        rakho $i = $i + 1;
     }
-    Ferot $total;
+    dao $total;
 }
 
-Rakho $nums = [10, 20, 30, 40];
-Bolo sumArray($nums, Lomba($nums)); // Prints 100
+rakho $nums = [10, 20, 30, 40];
+bolo sumArray($nums, lomba($nums)); // Prints 100
 ```
 
 ### 🔁 While Loops with Break/Continue
 ```tacx
-Rakho $k = 0;
-Jotokhon $k < 10 {
-    Rakho $k = $k + 1;
+rakho $k = 0;
+jtkhn $k < 10 {
+    rakho $k = $k + 1;
     
     // Skip 3 using continue
-    Jodi $k == 3 {
-        Chalano;
+    jodi $k == 3 {
+        chal;
     }
     
     // Stop loop at 7 using break
-    Jodi $k == 7 {
-        Thamo;
+    jodi $k == 7 {
+        tham;
     }
     
-    Bolo $k;
+    bolo $k;
 }
 // Outputs: 1, 2, 4, 5, 6
 ```
@@ -209,7 +212,7 @@ The compiler & interpreter modules are placed modularly in the [`tacxir`](tacxir
 
 * **[`tacxIR.py`](tacxIR.py)**: The main compatibility entry point. Preserves retro shell usages and maps to the underlying package APIs.
 * **[`tacxir/__init__.py`](tacxir/__init__.py)**: Package initializer exposing public APIs (`Parser`, `TacxIR`, `tokenize`, `main`).
-* **[`tacxir/tokens.py`](tacxir/tokens.py)**: High-performance regular expression tokenizer (Lexer), mapping code segments into positional tokens.
+* **[`tacxir/tokens.py`](tacxir/tokens.py)**: High-performance regular expression tokenizer (Lexer). Keyword tokens are matched case-insensitively and normalized to lowercase values.
 * **[`tacxir/ast_nodes.py`](tacxir/ast_nodes.py)**: Concrete classes representing every language expression and statement node, along with structured stringifiers for debugging.
 * **[`tacxir/parser.py`](tacxir/parser.py)**: Recursive-descent parser mapping token lists into clean Abstract Syntax Trees, handling operator precedence and escape sequence decode boundaries.
 * **[`tacxir/interpreter.py`](tacxir/interpreter.py)**: The runtime manager. Handles lexical scoping, function frames, loop break/continue exception bubbling, and builtin calculations.
@@ -232,9 +235,9 @@ To inspect the output of the lexical scanner without running the interpreter:
 ```powershell
 python tacxIR.py --dump-tokens .\v2strengthtext.tacx
 ```
-*Outputs tokens in format:*
+*Outputs token types in uppercase, with keyword values normalized to lowercase:*
 ```text
-BOLO         Bolo
+BOLO         bolo
 NUMBER       1
 PLUS         +
 NUMBER       2
