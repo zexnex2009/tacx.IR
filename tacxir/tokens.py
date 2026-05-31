@@ -5,6 +5,19 @@ def keyword_pattern(keyword: str) -> str:
     return rf"(?:{keyword})\b"
 
 
+ALIASES = {
+    "JOTOKHON": ("jtkhn", "jotokhon"),
+    "THAMO": ("tham", "thamo"),
+    "CHALANO": ("chal", "chalano"),
+    "EBONG": ("ar", "ebong"),
+    "OTHOBA": ("ba", "othoba"),
+    "CHOLAO": ("kor", "cholao"),
+    "DHUKAO": ("dhuk", "dhukao"),
+    "BERKORO": ("berkr", "berkoro"),
+    "DHORON": ("dhron", "dhoron"),
+}
+
+
 TOKEN_TYPES = [
     ("DHORI", keyword_pattern("dhori")),
     ("FEROT", keyword_pattern("dao")),
@@ -23,6 +36,7 @@ TOKEN_TYPES = [
     ("BOLO", keyword_pattern("bolo")),
     ("PORO", keyword_pattern("poro")),
     ("RAKHO", keyword_pattern("rakho")),
+    ("AMDO", keyword_pattern("amdo")),
     ("SKIP", r"[ \t\r\n]+"),
     ("COMMENT", r"//.*"),
     ("LPAREN", r"\("),
@@ -32,6 +46,7 @@ TOKEN_TYPES = [
     ("LBRACE", r"\{"),
     ("RBRACE", r"\}"),
     ("COMMA", r","),
+    ("COLON", r":"),
     ("EQEQ", r"=="),
     ("NOTEQ", r"!="),
     ("LTE", r"<="),
@@ -57,7 +72,7 @@ TOKEN_REGEX = re.compile("|".join(f"(?P<{name}>{pattern})" for name, pattern in 
 KEYWORD_TOKEN_TYPES = {
     "DHORI", "FEROT", "JOTOKHON", "THAMO", "CHALANO",
     "SOTYO", "MITHYA", "EBONG", "OTHOBA", "NAILE",
-    "NA", "CHOLAO", "BAR", "JODI", "BOLO", "PORO", "RAKHO",
+    "NA", "CHOLAO", "BAR", "JODI", "BOLO", "PORO", "RAKHO", "AMDO",
 }
 
 

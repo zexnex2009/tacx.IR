@@ -35,9 +35,15 @@ class TacxSyntaxHighlighter(QSyntaxHighlighter):
         "thamo",
         "chal",
         "chalano",
+        "amdo",
     }
     OPERATORS = {"ar", "ebong", "ba", "othoba", "na"}
-    BUILTINS = {"lomba", "dhukao", "dhuk", "berkoro", "berkr", "dhoron", "dhron"}
+    BUILTINS = {
+        "lomba", "dhukao", "dhuk", "berkoro", "berkr", "dhoron", "dhron",
+        "mul", "ghat", "boro", "choto",
+        "bhag", "jora", "borhat", "chothat",
+        "porofile", "lekhofile",
+    }
 
     def __init__(self, document):
         super().__init__(document)
