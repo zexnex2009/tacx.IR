@@ -222,9 +222,9 @@ Bolo Dhoron(Sotyo);
         output = run_program('Bolo "line1\\nline2"; Bolo "quote: \\"x\\""; Bolo "tab\\tend";')
         self.assertEqual(output, 'line1\nline2\nquote: "x"\ntab\tend\n')
 
-    def test_invalid_string_escape_is_rejected(self):
-        with self.assertRaisesRegex(SyntaxError, "Unsupported escape sequence"):
-            parse_program('Bolo "\\q";')
+    def test_unknown_string_escape_passes_through(self):
+        output = run_program('Bolo "\\q";')
+        self.assertEqual(output, "q\n")
 
     def test_strength_sample_smoke(self):
         sample = Path(__file__).with_name('v2strengthtext.tacx').read_text(encoding='utf-8')

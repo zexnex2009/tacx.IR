@@ -44,9 +44,10 @@ class Parser:
             if i + 1 >= len(raw):
                 self._error("Unterminated escape sequence in string literal", token)
             seq = raw[i : i + 2]
-            if seq not in escapes:
-                self._error(f"Unsupported escape sequence {seq!r}", token)
-            decoded.append(escapes[seq])
+            if seq in escapes:
+                decoded.append(escapes[seq])
+            else:
+                decoded.append(seq[1])
             i += 2
         return "".join(decoded)
 
