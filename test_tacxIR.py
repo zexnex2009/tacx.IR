@@ -257,5 +257,290 @@ Bolo Dhoron(Sotyo);
         self.assertIn("BinOp(+)", output)
 
 
+# ---- New feature tests ----
+
+class TacxIRSourceAwareTests(unittest.TestCase):
+    def test_ast_node_stores_position(self):
+        from tacxir.ast_nodes import NumberNode
+        n = NumberNode(42, line=3, col=5)
+        self.assertEqual(n.line, 3)
+        self.assertEqual(n.col, 5)
+
+    def test_runtime_error_format_includes_line_and_col(self):
+        from tacxir.errors import TacxIRRuntimeError
+        err = TacxIRRuntimeError("test error", line=2, col=8, source_line="bolo 1 + 2;")
+        formatted = err.format()
+        self.assertIn("line 2", formatted)
+        self.assertIn("col 8", formatted)
+        self.assertIn("test error", formatted)
+        self.assertIn("1 + 2", formatted)
+
+    def test_runtime_error_format_without_position(self):
+        from tacxir.errors import TacxIRRuntimeError
+        err = TacxIRRuntimeError("plain error")
+        formatted = err.format()
+        self.assertEqual(formatted, "plain error")
+
+    def test_cli_wraps_runtime_errors(self):
+        from tacxir.cli import run_source
+        with self.assertRaisesRegex(RuntimeError, "Division by zero"):
+            run_source("bolo 1 / 0;")
+
+
+class TacxIRCanonicalVarTests(unittest.TestCase):
+    def test_dollar_and_bare_are_identical(self):
+        output = run_program("""
+rakho $x = 42;
+bolo x;
+""")
+        self.assertEqual(output, "42\n")
+
+    def test_assign_to_bare_reads_via_dollar(self):
+        output = run_program("""
+rakho $x = 99;
+bolo x;
+""")
+        self.assertEqual(output, "99\n")
+
+    def test_function_scope_canonical(self):
+        output = run_program("""
+dhori foo(a) {
+    bolo $a;
+}
+foo(10);
+""")
+        self.assertEqual(output, "10\n")
+
+
+class TacxIRSlicingTests(unittest.TestCase):
+    def test_slice_stop_only(self):
+        output = run_program("""
+rakho $arr = [0, 1, 2, 3, 4];
+bolo $arr[:3];
+""")
+        self.assertEqual(output, "[0, 1, 2]\n")
+
+    def test_slice_start_only(self):
+        output = run_program("""
+rakho $arr = [0, 1, 2, 3, 4];
+bolo $arr[2:];
+""")
+        self.assertEqual(output, "[2, 3, 4]\n")
+
+    def test_slice_start_stop(self):
+        output = run_program("""
+rakho $arr = [0, 1, 2, 3, 4];
+bolo $arr[1:4];
+""")
+        self.assertEqual(output, "[1, 2, 3]\n")
+
+    def test_slice_full(self):
+        output = run_program("""
+rakho $arr = [0, 1, 2, 3, 4];
+bolo $arr[:];
+""")
+        self.assertEqual(output, "[0, 1, 2, 3, 4]\n")
+
+    def test_slice_string(self):
+        output = run_program("""
+bolo "hello"[:3];
+""")
+        self.assertEqual(output, "hel\n")
+
+    def test_slice_string_with_start(self):
+        output = run_program("""
+bolo "hello"[2:];
+""")
+        self.assertEqual(output, "llo\n")
+
+    def test_slice_non_array_or_string_raises(self):
+        with self.assertRaisesRegex(TypeError, "Can only slice arrays or strings"):
+            execute_program("bolo 42[:2];")
+
+
+class TacxIRStdinTests(unittest.TestCase):
+    def test_stdin_dash_flag(self):
+        import sys
+        from tacxir.cli import main
+        test_input = 'bolo 1 + 2;'
+        old_stdin = sys.stdin
+        sys.stdin = io.StringIO(test_input)
+        try:
+            code, output = None, None
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = main(['-'])
+            self.assertEqual(code, 0)
+            self.assertEqual(buf.getvalue().strip(), '3')
+        finally:
+            sys.stdin = old_stdin
+
+    def test_stdin_implicit_pipe(self):
+        import sys
+        from tacxir.cli import main
+        test_input = 'bolo 42;'
+        old_stdin = sys.stdin
+        old_isatty = sys.stdin.isatty
+        sys.stdin = io.StringIO(test_input)
+        sys.stdin.isatty = lambda: False
+        try:
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = main([])
+            self.assertEqual(code, 0)
+            self.assertEqual(buf.getvalue().strip(), '42')
+        finally:
+            sys.stdin.isatty = old_isatty
+            sys.stdin = old_stdin
+
+
+class TacxIRNewBuiltinsTests(unittest.TestCase):
+    def test_mul_identity(self):
+        output = run_program("bolo mul(5);")
+        self.assertEqual(output, "5\n")
+
+    def test_ghat_power(self):
+        output = run_program("bolo ghat(2, 3);")
+        self.assertEqual(output, "8\n")
+
+    def test_boro_max(self):
+        output = run_program("bolo boro(10, 20);")
+        self.assertEqual(output, "20\n")
+
+    def test_choto_min(self):
+        output = run_program("bolo choto(10, 20);")
+        self.assertEqual(output, "10\n")
+
+    def test_bhag_split(self):
+        output = run_program('bolo bhag("a,b,c", ",");')
+        self.assertEqual(output, "['a', 'b', 'c']\n")
+
+    def test_jora_join(self):
+        output = run_program('bolo jora(["x", "y"], "-");')
+        self.assertEqual(output, "x-y\n")
+
+    def test_borhat_upper(self):
+        output = run_program('bolo borhat("hello");')
+        self.assertEqual(output, "HELLO\n")
+
+    def test_chothat_lower(self):
+        output = run_program('bolo chothat("HELLO");')
+        self.assertEqual(output, "hello\n")
+
+    def test_porofile_reads_file(self):
+        from tempfile import NamedTemporaryFile
+        import os
+        with NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+            f.write("hello world")
+            f.flush()
+            fname = f.name.replace("\\", "/")
+        try:
+            output = run_program(f'bolo porofile("{fname}");')
+            self.assertEqual(output, "hello world\n")
+        finally:
+            os.unlink(fname)
+
+    def test_lekhofile_writes_file(self):
+        from tempfile import NamedTemporaryFile
+        import os
+        with NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+            fname = f.name.replace("\\", "/")
+        try:
+            output = run_program(f'bolo lekhofile("{fname}", "test content");')
+            self.assertEqual(output, "12\n")
+            with open(fname, 'r', encoding='utf-8') as f:
+                self.assertEqual(f.read(), "test content")
+        finally:
+            os.unlink(fname)
+
+    def test_porofile_not_found(self):
+        with self.assertRaisesRegex(FileNotFoundError, "File not found"):
+            execute_program('bolo porofile("nonexistent.tacx");')
+
+    def test_bhag_type_error(self):
+        with self.assertRaisesRegex(TypeError, "bhag expects a string"):
+            execute_program('bolo bhag(42, ",");')
+
+    def test_jora_type_error(self):
+        with self.assertRaisesRegex(TypeError, "jora expects an array"):
+            execute_program('bolo jora("x", "-");')
+
+
+class TacxIRSyntaxAliasTests(unittest.TestCase):
+    def test_amdo_tokenizes(self):
+        from tacxir.tokens import tokenize
+        tokens, _ = tokenize('amdo "utils.tacx";')
+        types = [t.type for t in tokens]
+        self.assertIn("AMDO", types)
+
+    def test_amdo_parses(self):
+        from tacxir.ast_nodes import AmdoStmt
+        tokens, src = tokenize('amdo "utils.tacx";')
+        parser = __import__("tacxir.parser", fromlist=["Parser"]).Parser(tokens, src)
+        program = parser.parse_program()
+        self.assertEqual(len(program), 1)
+        self.assertIsInstance(program[0], AmdoStmt)
+        self.assertEqual(program[0].path, "utils.tacx")
+
+
+class TacxIRImportTests(unittest.TestCase):
+    def test_import_syntax_parses(self):
+        from tempfile import TemporaryDirectory
+        from tacxir.cli import run_source
+        with TemporaryDirectory() as tmp:
+            main_path = Path(tmp) / "main.tacx"
+            utils_path = Path(tmp) / "utils.tacx"
+            utils_path.write_text('dhori greet() { bolo "hi"; }', encoding="utf-8")
+            main_path.write_text('amdo "utils.tacx"; greet();', encoding="utf-8")
+            output = run_source(main_path.read_text(encoding="utf-8"), file_path=main_path)
+            self.assertEqual(output, [])
+
+    def test_import_executes_imported_code(self):
+        from tempfile import TemporaryDirectory
+        from tacxir.cli import run_source
+        with TemporaryDirectory() as tmp:
+            main_path = Path(tmp) / "main.tacx"
+            utils_path = Path(tmp) / "utils.tacx"
+            utils_path.write_text('dhori greet() { bolo "hi"; }', encoding="utf-8")
+            main_path.write_text('amdo "utils.tacx"; greet();', encoding="utf-8")
+            stdout = io.StringIO()
+            with redirect_stdout(stdout):
+                run_source(main_path.read_text(encoding="utf-8"), file_path=main_path)
+            self.assertIn("hi", stdout.getvalue())
+
+    def test_import_no_duplicate_execution(self):
+        from tempfile import TemporaryDirectory
+        from tacxir.cli import run_source
+        with TemporaryDirectory() as tmp:
+            main_path = Path(tmp) / "main.tacx"
+            utils_path = Path(tmp) / "utils.tacx"
+            utils_path.write_text('bolo "imported";', encoding="utf-8")
+            main_path.write_text('amdo "utils.tacx"; amdo "utils.tacx";', encoding="utf-8")
+            stdout = io.StringIO()
+            with redirect_stdout(stdout):
+                run_source(main_path.read_text(encoding="utf-8"), file_path=main_path)
+            self.assertEqual(stdout.getvalue().count("imported"), 1)
+
+    def test_import_circular_detection(self):
+        from tempfile import TemporaryDirectory
+        from tacxir.cli import run_source
+        with TemporaryDirectory() as tmp:
+            a_path = Path(tmp) / "a.tacx"
+            b_path = Path(tmp) / "b.tacx"
+            a_path.write_text('amdo "b.tacx";', encoding="utf-8")
+            b_path.write_text('amdo "a.tacx";', encoding="utf-8")
+            with self.assertRaises(RuntimeError):
+                run_source(a_path.read_text(encoding="utf-8"), file_path=a_path)
+
+    def test_import_missing_file(self):
+        from tempfile import TemporaryDirectory
+        from tacxir.cli import run_source
+        with TemporaryDirectory() as tmp:
+            main_path = Path(tmp) / "main.tacx"
+            main_path.write_text('amdo "missing.tacx";', encoding="utf-8")
+            with self.assertRaises(FileNotFoundError):
+                run_source(main_path.read_text(encoding="utf-8"), file_path=main_path)
+
+
 if __name__ == "__main__":
     unittest.main()
