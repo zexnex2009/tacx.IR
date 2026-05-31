@@ -7,7 +7,7 @@ def keyword_pattern(keyword: str) -> str:
 
 TOKEN_TYPES = [
     ("DHORI", keyword_pattern("dhori")),
-    ("FEROT", keyword_pattern("ferot")),
+    ("FEROT", keyword_pattern("dao")),
     ("JOTOKHON", keyword_pattern("jtkhn|jotokhon")),
     ("THAMO", keyword_pattern("tham|thamo")),
     ("CHALANO", keyword_pattern("chal|chalano")),
@@ -54,11 +54,11 @@ TOKEN_TYPES = [
 
 
 TOKEN_REGEX = re.compile("|".join(f"(?P<{name}>{pattern})" for name, pattern in TOKEN_TYPES), re.IGNORECASE)
-KEYWORD_TOKEN_TYPES = set()
-for name, _ in TOKEN_TYPES:
-    if name == "SKIP":
-        break
-    KEYWORD_TOKEN_TYPES.add(name)
+KEYWORD_TOKEN_TYPES = {
+    "DHORI", "FEROT", "JOTOKHON", "THAMO", "CHALANO",
+    "SOTYO", "MITHYA", "EBONG", "OTHOBA", "NAILE",
+    "NA", "CHOLAO", "BAR", "JODI", "BOLO", "PORO", "RAKHO",
+}
 
 
 class Token:

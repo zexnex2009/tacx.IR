@@ -101,7 +101,7 @@ class DhoriStmt(StmtNode):
         self.body = body
 
 
-class FerotStmt(StmtNode):
+class DaoStmt(StmtNode):
     def __init__(self, expr):
         self.expr = expr
 
@@ -193,8 +193,8 @@ def ast_to_debug_lines(node: ASTNode, indent: int = 0) -> List[str]:
         for stmt in node.body:
             lines.extend(ast_to_debug_lines(stmt, indent + 1))
         return lines
-    if isinstance(node, FerotStmt):
-        lines = [f"{pad}FerotStmt"]
+    if isinstance(node, DaoStmt):
+        lines = [f"{pad}DaoStmt"]
         lines.extend(ast_to_debug_lines(node.expr, indent + 1))
         return lines
     if isinstance(node, ThamoStmt):

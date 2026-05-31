@@ -49,8 +49,8 @@ class Parser:
         return "".join(decoded)
 
     def parse_assignment_target(self) -> ASTNode:
-        if self.peek() is None or self.peek().type not in ("VAR", "ID"):
-            self._error("Expected variable or identifier after Rakho", self.peek())
+        if self.peek() is None or self.peek().type != "VAR":
+            self._error("Expected variable (with $) after Rakho", self.peek())
         target = VarNode(self.consume().value)
         while self.peek() and self.peek().type == "LBRACKET":
             self.consume("LBRACKET")
@@ -123,9 +123,9 @@ class Parser:
                 self.consume("RBRACKET")
                 expr = IndexNode(expr, index)
             elif tok and tok.type == "LPAREN":
-                if not isinstance(expr, VarNode) and not hasattr(expr, "name"):
-                    self._error("Only identifiers or variables can be called", tok)
-                name = expr.name if isinstance(expr, VarNode) else expr.name
+                if not isinstance(expr, VarNode):
+                    self._error("Only identifiers can be called", tok)
+                name = expr.name
                 self.consume("LPAREN")
                 args = []
                 if self.peek() and self.peek().type != "RPAREN":
@@ -192,8 +192,8 @@ class Parser:
         elif tok.type == "PORO":
             self.consume("PORO")
             next_tok = self.peek()
-            if next_tok is None or next_tok.type not in ("VAR", "ID"):
-                self._error("Expected variable or identifier after Poro", next_tok)
+            if next_tok is None or next_tok.type != "VAR":
+                self._error("Expected variable (with $) after Poro", next_tok)
             var = self.consume()
             self.consume("SEMI")
             return PoroStmt(var.value)
@@ -246,7 +246,7 @@ class Parser:
             self.consume("FEROT")
             expr = self.parse_expression()
             self.consume("SEMI")
-            return FerotStmt(expr)
+            return DaoStmt(expr)
         elif tok.type == "THAMO":
             self.consume("THAMO")
             self.consume("SEMI")

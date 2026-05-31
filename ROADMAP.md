@@ -259,7 +259,7 @@ To simplify syntax naturally and authentically without breaking existing program
 | **`cholao`** | **`kor`** | Loop: count-based loop keyword (*"kor"* = do). | **50%** (6 $\rightarrow$ 3) |
 | **`chalano`** | **`chal`** | Loop: "continue" instruction. *"chal"* means "go/move". | **42%** (7 $\rightarrow$ 4) |
 | **`thamo`** | **`tham`** | Loop: "break" instruction. | **20%** (5 $\rightarrow$ 4) |
-| **`ferot`** | **`dao`** | Keyword: returns a value from a function (*"dao"* = give). | **40%** (5 $\rightarrow$ 3) |
+| **`dao`** | `return` | Keyword: returns a value from a function (*"dao"* = give). `ferot` removed. | **40%** (3 $\rightarrow$ 3) |
 | **`dhori`** | **`dhori`** | Keyword: function definition (unchanged). | **0%** (5 $\rightarrow$ 5) |
 | **`berkoro(...)`** | **`berkr(...)`** | Built-in: pops/removes last item of an array. | **28%** (7 $\rightarrow$ 5) |
 | **`dhukao(...)`** | **`dhuk(...)`** | Built-in: appends a value into an array. | **33%** (6 $\rightarrow$ 4) |
@@ -276,9 +276,9 @@ To simplify syntax naturally and authentically without breaking existing program
 // BEFORE (Verbose)
 dhori factorial(n) {
     jodi n <= 1 {
-        ferot 1;
+        dao 1;
     } naile {
-        ferot n * factorial(n - 1);
+        dao n * factorial(n - 1);
     }
 }
 
@@ -320,7 +320,7 @@ To keep lowercase as the canonical style while remaining backward compatible wit
      ("CHALANO", keyword_pattern("chal|chalano")),  
      ("CHOLAO", keyword_pattern("kor|cholao")),
      ("THAMO", keyword_pattern("tham|thamo")),
-     ("FEROT", keyword_pattern("dao|ferot")),
+     ("FEROT", keyword_pattern("dao")),
      ("DHORI", keyword_pattern("dhori")),
      ```
 2. **`[interpreter.py](tacxir/interpreter.py)`**:
@@ -342,3 +342,23 @@ To keep lowercase as the canonical style while remaining backward compatible wit
      ```
 3. **`[test_tacxIR.py](test_tacxIR.py)`**:
    - Write unit tests validating that lowercase shorthands evaluate correctly and that mixed-case forms remain backward compatible.
+
+
+---
+
+## 🐛 Known Issues & Technical Debt
+
+### 1. `$x` vs `x` variable identity (normalization deferred)
+
+Currently, the interpreter treats `$name` and `name` as **distinct variables** because the `$` prefix is stored as part of the variable name in scope dictionaries. This means:
+
+```tacx
+rakho $x = 5;
+rakho x = 10;     // Creates a DIFFERENT variable 'x'
+bolo $x;          // Prints 5
+bolo x;           // Prints 10 -- confusing!
+```
+
+**Planned fix**: Strip the `$` prefix during variable storage/retrieval so that `$name` and `name` map to the same underlying variable. Bare identifiers (`ID` tokens) in expression context are already rejected with a clear error message. This fix is deferred to a future session to keep the current scope focused.
+
+**Status**: ⏳ Deferred — documented for later implementation.

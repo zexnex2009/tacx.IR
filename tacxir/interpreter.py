@@ -3,16 +3,22 @@ from typing import Any, Callable, Dict, List
 from .ast_nodes import *
 
 
-class ReturnException(Exception):
+class TacxIRControlFlow(BaseException):
+    """Base class for Tacx.IR control-flow exceptions.
+    Inherits from BaseException to prevent accidental catching by broad except Exception handlers."""
+    pass
+
+
+class ReturnException(TacxIRControlFlow):
     def __init__(self, value):
         self.value = value
 
 
-class BreakException(Exception):
+class BreakException(TacxIRControlFlow):
     pass
 
 
-class ContinueException(Exception):
+class ContinueException(TacxIRControlFlow):
     pass
 
 
@@ -50,6 +56,7 @@ class TacxIR:
             "berkr": self._builtin_berkoro,
             "Dhoron": self._builtin_dhoron,
             "dhoron": self._builtin_dhoron,
+            "dhron": self._builtin_dhoron,
         }
 
     def _get_var(self, name: str):
@@ -165,7 +172,15 @@ class TacxIR:
         if isinstance(node, BooleanNode):
             return node.value
         if isinstance(node, VarNode):
-            return self._get_var(node.name)
+            if node.name.startswith("$"):
+                return self._get_var(node.name)
+            # Bare identifier: try function param / scope lookup
+            for scope in reversed(self.scopes):
+                if node.name in scope:
+                    return scope[node.name]
+            raise NameError(
+                f"'{node.name}' is not defined. Variables must start with '$' (e.g., '${node.name}')."
+            )
         if isinstance(node, ArrayLiteralNode):
             return [self.eval_expr(e) for e in node.elements]
         if isinstance(node, IndexNode):
@@ -322,9 +337,9 @@ class TacxIR:
                 if stmt.name in self.functions:
                     raise RuntimeError(f"Function '{stmt.name}' already defined")
                 self.functions[stmt.name] = stmt
-            elif isinstance(stmt, FerotStmt):
+            elif isinstance(stmt, DaoStmt):
                 if self.function_depth == 0:
-                    raise RuntimeError("Ferot can only be used inside a function")
+                    raise RuntimeError("Dao can only be used inside a function")
                 val = self.eval_expr(stmt.expr)
                 raise ReturnException(val)
             elif isinstance(stmt, ThamoStmt):

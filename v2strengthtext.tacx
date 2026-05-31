@@ -1,5 +1,4 @@
 // Tacx.IR 2.0 - Comprehensive Strength Test
-// Tacx.IR 2.0 - Comprehensive Strength Test
 // Tests every major feature: variables, arithmetic, strings, arrays,
 // conditionals, loops, functions, recursion, logical ops, break/continue,
 // truthy/falsy, indexing, nesting, edge cases
@@ -7,20 +6,20 @@
 // ---- Utility Functions ----
 dhori factorial(n) {
     jodi n <= 1 {
-        ferot 1;
+        dao 1;
     } naile {
-        ferot n * factorial(n - 1);
+        dao n * factorial(n - 1);
     }
 }
 
 dhori fibonacci(n) {
-    jodi n == 0 { ferot 0; }
-    jodi n == 1 { ferot 1; }
-    ferot fibonacci(n - 1) + fibonacci(n - 2);
+    jodi n == 0 { dao 0; }
+    jodi n == 1 { dao 1; }
+    dao fibonacci(n - 1) + fibonacci(n - 2);
 }
 
 dhori isEven(n) {
-    ferot n % 2 == 0;
+    dao n % 2 == 0;
 }
 
 dhori sumArray(arr, len) {
@@ -30,17 +29,17 @@ dhori sumArray(arr, len) {
         rakho $total = $total + arr[$i];
         rakho $i = $i + 1;
     }
-    ferot $total;
+    dao $total;
 }
 
 dhori greetUser(name, age) {
     jodi age >= 18 ar age < 60 {
-        ferot "Nomoshkar " + name + ", apni ekjon probin!";
+        dao "Nomoshkar " + name + ", apni ekjon probin!";
     } naile {
         jodi age < 18 {
-            ferot "Hello " + name + ", tumi ekhono choto!";
+            dao "Hello " + name + ", tumi ekhono choto!";
         } naile {
-            ferot "Salam " + name + ", apni senior citizen!";
+            dao "Salam " + name + ", apni senior citizen!";
         }
     }
 }
@@ -231,9 +230,9 @@ Bolo "";
 // Test 17: Recursive Array Sum
 Dhori recursiveSum(arr, index, len) {
     Jodi index >= len {
-        Ferot 0;
+        dao 0;
     }
-    Ferot arr[index] + recursiveSum(arr, index + 1, len);
+    dao arr[index] + recursiveSum(arr, index + 1, len);
 }
 
 Rakho $rArr = [3, 7, 2, 9, 1];
@@ -283,7 +282,7 @@ Bolo "  ✓ Nested arrays";
 Bolo "  ✓ Native builtins";
 Bolo "  ✓ Functions with parameters";
 Bolo "  ✓ Recursive functions";
-Bolo "  ✓ Return values (Ferot)";
+Bolo "  ✓ Return values (Dao)";
 Bolo "  ✓ Expression precedence";
 Bolo "  ✓ Unary operators (-, Na)";
 Bolo "  ✓ Variable reassignment";

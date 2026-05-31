@@ -48,7 +48,7 @@ class TacxIRTests(unittest.TestCase):
         source = """
 Dhori build() {
     Rakho $tmp = 10;
-    Ferot $tmp;
+    dao $tmp;
 }
 Bolo build();
 Bolo build();
@@ -59,7 +59,7 @@ Bolo build();
         interpreter = execute_program("""
 Dhori build() {
     Rakho $tmp = 10;
-    Ferot $tmp;
+    dao $tmp;
 }
 """)
         self.assertNotIn("$tmp", interpreter.globals)
@@ -155,11 +155,11 @@ bolo $tmp;
         self.assertEqual(output, "True\n")
 
     def test_return_outside_function_is_runtime_error(self):
-        tokens, src = tokenize("Ferot 1;")
+        tokens, src = tokenize("dao 1;")
         parser = Parser(tokens, src)
         program = parser.parse_program()
         interpreter = TacxIR()
-        with self.assertRaisesRegex(RuntimeError, "Ferot can only be used inside a function"):
+        with self.assertRaisesRegex(RuntimeError, "Dao can only be used inside a function"):
             interpreter.execute(program)
 
     def test_break_outside_loop_is_runtime_error(self):

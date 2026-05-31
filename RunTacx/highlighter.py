@@ -31,7 +31,6 @@ class TacxSyntaxHighlighter(QSyntaxHighlighter):
         "bar",
         "dhori",
         "dao",
-        "ferot",
         "tham",
         "thamo",
         "chal",
