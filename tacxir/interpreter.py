@@ -1,6 +1,11 @@
-from typing import Any, Callable, Dict, List
+import io
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
 from .ast_nodes import *
+from .errors import TacxIRRuntimeError
+from .parser import Parser
+from .tokens import tokenize
 
 
 class TacxIRControlFlow(BaseException):
@@ -38,13 +43,32 @@ def is_truthy(val) -> bool:
     return True
 
 
+def _canon_name(name: str) -> str:
+    return name[1:] if name.startswith("$") else name
+
+
+def _source_line(source: str, line_no: int) -> str:
+    if not source:
+        return ""
+    lines = source.split("\n")
+    if 1 <= line_no <= len(lines):
+        return lines[line_no - 1].strip()
+    return ""
+
+
 class TacxIR:
-    def __init__(self):
+    def __init__(self, source: str = ""):
+        self.source = source
         self.globals: Dict[str, Any] = {}
         self.functions: Dict[str, DhoriStmt] = {}
         self.scopes: List[Dict[str, Any]] = [self.globals]
+        self.current_node: Optional[ASTNode] = None
+        self._last_error_node: Optional[ASTNode] = None
         self.function_depth = 0
         self.loop_depth = 0
+        self.current_file: Optional[Path] = None
+        self.imported_files: set = set()
+        self.import_stack: List[Path] = []
         self.builtins: Dict[str, Callable[[List[Any]], Any]] = {
             "Lomba": self._builtin_lomba,
             "lomba": self._builtin_lomba,
@@ -57,23 +81,60 @@ class TacxIR:
             "Dhoron": self._builtin_dhoron,
             "dhoron": self._builtin_dhoron,
             "dhron": self._builtin_dhoron,
+            "mul": self._builtin_sqrt,
+            "ghat": self._builtin_power,
+            "boro": self._builtin_max,
+            "choto": self._builtin_min,
+            "bhag": self._builtin_split,
+            "jora": self._builtin_join,
+            "borhat": self._builtin_upper,
+            "chothat": self._builtin_lower,
+            "porofile": self._builtin_read_file,
+            "lekhofile": self._builtin_write_file,
         }
 
+    def _make_runtime_error(self, message: str, node: Optional[ASTNode] = None) -> TacxIRRuntimeError:
+        n = node or self.current_node
+        line = n.line if n else None
+        col = n.col if n else None
+        sl = _source_line(self.source, line) if (line and self.source) else ""
+        return TacxIRRuntimeError(message, line=line, col=col, source_line=sl)
+
+    def _last_error_node_info(self) -> tuple:
+        n = self._last_error_node or self.current_node
+        if n and n.line is not None:
+            return (n.line, n.col, _source_line(self.source, n.line))
+        return (None, None, "")
+
+    def _with_node(self, node: ASTNode, func):
+        prev = self.current_node
+        self.current_node = node
+        try:
+            return func()
+        except BaseException:
+            self._last_error_node = node
+            raise
+        finally:
+            self.current_node = prev
+
     def _get_var(self, name: str):
+        canon = _canon_name(name)
         for scope in reversed(self.scopes):
-            if name in scope:
-                return scope[name]
+            if canon in scope:
+                return scope[canon]
         raise NameError(f"Variable '{name}' is not defined")
 
     def _set_var(self, name: str, value):
+        canon = _canon_name(name)
         for scope in reversed(self.scopes):
-            if name in scope:
-                scope[name] = value
+            if canon in scope:
+                scope[canon] = value
                 return
-        self.scopes[-1][name] = value
+        self.scopes[-1][canon] = value
 
     def _declare_var(self, name: str, value):
-        self.scopes[-1][name] = value
+        canon = _canon_name(name)
+        self.scopes[-1][canon] = value
 
     def _push_scope(self):
         self.scopes.append({})
@@ -164,122 +225,214 @@ class TacxIR:
             return "talika"
         return type(value).__name__
 
+    def _builtin_sqrt(self, args: List[Any]) -> Any:
+        self._expect_arity("mul", args, 1)
+        val = args[0]
+        if isinstance(val, (int, float)) and not isinstance(val, bool):
+            return val
+        raise TypeError("mul expects a number")
+
+    def _builtin_power(self, args: List[Any]) -> Any:
+        self._expect_arity("ghat", args, 2)
+        base, exp = args
+        if not is_number(base) or not is_number(exp):
+            raise TypeError("ghat expects numbers")
+        return base ** exp
+
+    def _builtin_max(self, args: List[Any]) -> Any:
+        self._expect_arity("boro", args, 2)
+        a, b = args
+        if not is_number(a) or not is_number(b):
+            raise TypeError("boro expects numbers")
+        return a if a > b else b
+
+    def _builtin_min(self, args: List[Any]) -> Any:
+        self._expect_arity("choto", args, 2)
+        a, b = args
+        if not is_number(a) or not is_number(b):
+            raise TypeError("choto expects numbers")
+        return a if a < b else b
+
+    def _builtin_split(self, args: List[Any]) -> Any:
+        self._expect_arity("bhag", args, 2)
+        text, sep = args
+        if not isinstance(text, str):
+            raise TypeError("bhag expects a string as first argument")
+        if not isinstance(sep, str):
+            raise TypeError("bhag expects a string as second argument")
+        return text.split(sep)
+
+    def _builtin_join(self, args: List[Any]) -> Any:
+        self._expect_arity("jora", args, 2)
+        arr, sep = args
+        if not isinstance(arr, list):
+            raise TypeError("jora expects an array as first argument")
+        if not isinstance(sep, str):
+            raise TypeError("jora expects a string as second argument")
+        return sep.join(str(e) for e in arr)
+
+    def _builtin_upper(self, args: List[Any]) -> Any:
+        self._expect_arity("borhat", args, 1)
+        val = args[0]
+        if not isinstance(val, str):
+            raise TypeError("borhat expects a string")
+        return val.upper()
+
+    def _builtin_lower(self, args: List[Any]) -> Any:
+        self._expect_arity("chothat", args, 1)
+        val = args[0]
+        if not isinstance(val, str):
+            raise TypeError("chothat expects a string")
+        return val.lower()
+
+    def _builtin_read_file(self, args: List[Any]) -> Any:
+        self._expect_arity("porofile", args, 1)
+        path_str = args[0]
+        if not isinstance(path_str, str):
+            raise TypeError("porofile expects a string path")
+        path = Path(path_str)
+        if not path.is_file():
+            raise FileNotFoundError(f"File not found: {path}")
+        try:
+            return path.read_text(encoding="utf-8")
+        except PermissionError:
+            raise PermissionError(f"Permission denied: {path}")
+
+    def _builtin_write_file(self, args: List[Any]) -> Any:
+        self._expect_arity("lekhofile", args, 2)
+        path_str, content = args
+        if not isinstance(path_str, str):
+            raise TypeError("lekhofile expects a string path as first argument")
+        if not isinstance(content, str):
+            raise TypeError("lekhofile expects a string as second argument")
+        path = Path(path_str)
+        try:
+            path.write_text(content, encoding="utf-8")
+            return len(content)
+        except PermissionError:
+            raise PermissionError(f"Permission denied: {path}")
+
     def eval_expr(self, node: ASTNode) -> Any:
-        if isinstance(node, NumberNode):
-            return node.value
-        if isinstance(node, StringNode):
-            return node.value
-        if isinstance(node, BooleanNode):
-            return node.value
-        if isinstance(node, VarNode):
-            if node.name.startswith("$"):
+        def _eval():
+            if isinstance(node, NumberNode):
+                return node.value
+            if isinstance(node, StringNode):
+                return node.value
+            if isinstance(node, BooleanNode):
+                return node.value
+            if isinstance(node, VarNode):
                 return self._get_var(node.name)
-            # Bare identifier: try function param / scope lookup
-            for scope in reversed(self.scopes):
-                if node.name in scope:
-                    return scope[node.name]
-            raise NameError(
-                f"'{node.name}' is not defined. Variables must start with '$' (e.g., '${node.name}')."
-            )
-        if isinstance(node, ArrayLiteralNode):
-            return [self.eval_expr(e) for e in node.elements]
-        if isinstance(node, IndexNode):
-            obj = self.eval_expr(node.obj)
-            if not isinstance(obj, list):
-                raise TypeError("Can only index arrays")
-            idx = self._coerce_index(self.eval_expr(node.index))
-            if idx < 0 or idx >= len(obj):
-                raise IndexError(f"Index {idx} out of bounds (length {len(obj)})")
-            return obj[idx]
-        if isinstance(node, CallNode):
-            builtin = self.builtins.get(node.name)
-            if builtin is not None:
+            if isinstance(node, ArrayLiteralNode):
+                return [self.eval_expr(e) for e in node.elements]
+            if isinstance(node, IndexNode):
+                obj = self.eval_expr(node.obj)
+                if not isinstance(obj, list):
+                    raise TypeError("Can only index arrays")
+                idx = self._coerce_index(self.eval_expr(node.index))
+                if idx < 0 or idx >= len(obj):
+                    raise IndexError(f"Index {idx} out of bounds (length {len(obj)})")
+                return obj[idx]
+            if isinstance(node, SliceNode):
+                obj = self.eval_expr(node.obj)
+                if not isinstance(obj, (list, str)):
+                    raise TypeError("Can only slice arrays or strings")
+                start = None
+                if node.start is not None:
+                    start = self._coerce_index(self.eval_expr(node.start))
+                stop = None
+                if node.stop is not None:
+                    stop = self._coerce_index(self.eval_expr(node.stop))
+                return obj[start:stop]
+            if isinstance(node, CallNode):
+                builtin = self.builtins.get(node.name)
+                if builtin is not None:
+                    args = [self.eval_expr(a) for a in node.args]
+                    return builtin(args)
+                func = self.functions.get(node.name)
+                if func is None:
+                    raise NameError(f"Function '{node.name}' not defined")
                 args = [self.eval_expr(a) for a in node.args]
-                return builtin(args)
-            func = self.functions.get(node.name)
-            if func is None:
-                raise NameError(f"Function '{node.name}' not defined")
-            args = [self.eval_expr(a) for a in node.args]
-            if len(args) != len(func.params):
-                raise TypeError(f"Function '{node.name}' expects {len(func.params)} arguments, got {len(args)}")
-            local_scope = {}
-            for param, arg in zip(func.params, args):
-                local_scope[param] = arg
-            self.scopes.append(local_scope)
-            self.function_depth += 1
-            try:
-                self.execute(func.body)
-                return None
-            except ReturnException as ret:
-                return ret.value
-            finally:
-                self.function_depth -= 1
-                self.scopes.pop()
-        if isinstance(node, UnaryOpNode):
-            val = self.eval_expr(node.operand)
-            if node.op == "-":
-                if not is_number(val):
-                    raise TypeError(f"Unary '-' requires number, got {type(val).__name__}")
-                return -val
-            elif node.op == "!":
-                return not is_truthy(val)
-        if isinstance(node, BinOpNode):
-            left = self.eval_expr(node.left)
-            op = node.op
-            if op in ("ebong", "ar"):
-                return is_truthy(left) and is_truthy(self.eval_expr(node.right))
-            if op in ("othoba", "ba"):
-                return is_truthy(left) or is_truthy(self.eval_expr(node.right))
-            right = self.eval_expr(node.right)
-            if op == "+":
-                if isinstance(left, str) or isinstance(right, str):
-                    return str(left) + str(right)
-                if not is_number(left) or not is_number(right):
-                    raise TypeError("Operator '+' requires numbers when not concatenating strings")
-                return left + right
-            elif op in ("-", "*", "/", "%"):
-                if not is_number(left) or not is_number(right):
-                    raise TypeError(f"Operator '{op}' requires numbers")
-                if op == "-":
-                    return left - right
-                if op == "*":
-                    return left * right
-                if op == "/":
-                    if right == 0:
-                        raise ZeroDivisionError("Division by zero")
-                    return left / right
-                if op == "%":
-                    if right == 0:
-                        raise ZeroDivisionError("Modulo by zero")
-                    return left % right
-            elif op in ("==", "!=", "<", ">", "<=", ">="):
-                is_left_num = is_number(left)
-                is_right_num = is_number(right)
+                if len(args) != len(func.params):
+                    raise TypeError(f"Function '{node.name}' expects {len(func.params)} arguments, got {len(args)}")
+                local_scope = {}
+                for param, arg in zip(func.params, args):
+                    local_scope[_canon_name(param)] = arg
+                self.scopes.append(local_scope)
+                self.function_depth += 1
+                try:
+                    self.execute(func.body)
+                    return None
+                except ReturnException as ret:
+                    return ret.value
+                finally:
+                    self.function_depth -= 1
+                    self.scopes.pop()
+            if isinstance(node, UnaryOpNode):
+                val = self.eval_expr(node.operand)
+                if node.op == "-":
+                    if not is_number(val):
+                        raise TypeError(f"Unary '-' requires number, got {type(val).__name__}")
+                    return -val
+                elif node.op == "!":
+                    return not is_truthy(val)
+            if isinstance(node, BinOpNode):
+                left = self.eval_expr(node.left)
+                op = node.op
+                if op in ("ebong", "ar"):
+                    return is_truthy(left) and is_truthy(self.eval_expr(node.right))
+                if op in ("othoba", "ba"):
+                    return is_truthy(left) or is_truthy(self.eval_expr(node.right))
+                right = self.eval_expr(node.right)
+                if op == "+":
+                    if isinstance(left, str) or isinstance(right, str):
+                        return str(left) + str(right)
+                    if not is_number(left) or not is_number(right):
+                        raise TypeError("Operator '+' requires numbers when not concatenating strings")
+                    return left + right
+                elif op in ("-", "*", "/", "%"):
+                    if not is_number(left) or not is_number(right):
+                        raise TypeError(f"Operator '{op}' requires numbers")
+                    if op == "-":
+                        return left - right
+                    if op == "*":
+                        return left * right
+                    if op == "/":
+                        if right == 0:
+                            raise ZeroDivisionError("Division by zero")
+                        return left / right
+                    if op == "%":
+                        if right == 0:
+                            raise ZeroDivisionError("Modulo by zero")
+                        return left % right
+                elif op in ("==", "!=", "<", ">", "<=", ">="):
+                    is_left_num = is_number(left)
+                    is_right_num = is_number(right)
 
-                if op in ("==", "!="):
-                    return (left == right) if op == "==" else (left != right)
+                    if op in ("==", "!="):
+                        return (left == right) if op == "==" else (left != right)
 
-                if is_left_num and is_right_num:
-                    lv, rv = left, right
-                elif type(left) is type(right) and isinstance(left, str):
-                    lv, rv = left, right
+                    if is_left_num and is_right_num:
+                        lv, rv = left, right
+                    elif type(left) is type(right) and isinstance(left, str):
+                        lv, rv = left, right
+                    else:
+                        raise TypeError(
+                            f"Operator '{op}' requires comparable values of the same type, got "
+                            f"{type(left).__name__} and {type(right).__name__}"
+                        )
+
+                    if op == "<":
+                        return lv < rv
+                    if op == ">":
+                        return lv > rv
+                    if op == "<=":
+                        return lv <= rv
+                    if op == ">=":
+                        return lv >= rv
                 else:
-                    raise TypeError(
-                        f"Operator '{op}' requires comparable values of the same type, got "
-                        f"{type(left).__name__} and {type(right).__name__}"
-                    )
-
-                if op == "<":
-                    return lv < rv
-                if op == ">":
-                    return lv > rv
-                if op == "<=":
-                    return lv <= rv
-                if op == ">=":
-                    return lv >= rv
-            else:
-                raise RuntimeError(f"Unknown operator '{op}'")
-        raise RuntimeError(f"Unknown expression node {type(node)}")
+                    raise RuntimeError(f"Unknown operator '{op}'")
+            raise RuntimeError(f"Unknown expression node {type(node)}")
+        return self._with_node(node, _eval)
 
     def execute(self, stmts: List[StmtNode]):
         for stmt in stmts:
@@ -350,8 +503,41 @@ class TacxIR:
                 if self.loop_depth == 0:
                     raise RuntimeError("Chalano can only be used inside a loop")
                 raise ContinueException()
+            elif isinstance(stmt, AmdoStmt):
+                self._execute_import(stmt)
             elif isinstance(stmt, ExprStmt):
                 self.eval_expr(stmt.expr)
             else:
                 raise RuntimeError(f"Unknown statement {type(stmt)}")
 
+    def _execute_import(self, stmt: AmdoStmt):
+        if self.current_file is None:
+            raise RuntimeError("amdo can only be used relative to a source file")
+        base_dir = self.current_file.resolve().parent
+        import_path = Path(stmt.path)
+        if not import_path.suffix:
+            import_path = import_path.with_suffix(".tacx")
+        resolved = (base_dir / import_path).resolve()
+        if resolved in self.import_stack:
+            raise RuntimeError(f"Circular import detected: {resolved}")
+        if resolved not in self.imported_files:
+            if not resolved.is_file():
+                raise FileNotFoundError(f"Import file not found: {resolved}")
+            self.import_stack.append(resolved)
+            try:
+                imported_source = resolved.read_text(encoding="utf-8")
+                tokens, src = tokenize(imported_source)
+                parser = Parser(tokens, src)
+                imported_program = parser.parse_program()
+                prev_file = self.current_file
+                prev_source = self.source
+                self.current_file = resolved
+                self.source = imported_source
+                self.imported_files.add(resolved)
+                try:
+                    self.execute(imported_program)
+                finally:
+                    self.current_file = prev_file
+                    self.source = prev_source
+            finally:
+                self.import_stack.pop()
