@@ -1,56 +1,75 @@
-from typing import List, Union
+from typing import List, Optional, Union
 
 
 class ASTNode:
-    pass
+    def __init__(self, line: Optional[int] = None, col: Optional[int] = None):
+        self.line = line
+        self.col = col
 
 
 class NumberNode(ASTNode):
-    def __init__(self, value: Union[int, float]):
+    def __init__(self, value: Union[int, float], line: Optional[int] = None, col: Optional[int] = None):
+        super().__init__(line=line, col=col)
         self.value = value
 
 
 class StringNode(ASTNode):
-    def __init__(self, value: str):
+    def __init__(self, value: str, line: Optional[int] = None, col: Optional[int] = None):
+        super().__init__(line=line, col=col)
         self.value = value
 
 
 class VarNode(ASTNode):
-    def __init__(self, name: str):
+    def __init__(self, name: str, line: Optional[int] = None, col: Optional[int] = None):
+        super().__init__(line=line, col=col)
         self.name = name
 
 
 class BooleanNode(ASTNode):
-    def __init__(self, value: bool):
+    def __init__(self, value: bool, line: Optional[int] = None, col: Optional[int] = None):
+        super().__init__(line=line, col=col)
         self.value = value
 
 
 class BinOpNode(ASTNode):
-    def __init__(self, op: str, left: ASTNode, right: ASTNode):
+    def __init__(self, op: str, left: ASTNode, right: ASTNode, line: Optional[int] = None, col: Optional[int] = None):
+        super().__init__(line=line, col=col)
         self.op = op
         self.left = left
         self.right = right
 
 
 class UnaryOpNode(ASTNode):
-    def __init__(self, op: str, operand: ASTNode):
+    def __init__(self, op: str, operand: ASTNode, line: Optional[int] = None, col: Optional[int] = None):
+        super().__init__(line=line, col=col)
         self.op = op
         self.operand = operand
 
 
 class ArrayLiteralNode(ASTNode):
-    def __init__(self, elements: List[ASTNode]):
+    def __init__(self, elements: List[ASTNode], line: Optional[int] = None, col: Optional[int] = None):
+        super().__init__(line=line, col=col)
         self.elements = elements
 
 
 class IndexNode(ASTNode):
-    def __init__(self, obj: ASTNode, index: ASTNode):
+    def __init__(self, obj: ASTNode, index: ASTNode, line: Optional[int] = None, col: Optional[int] = None):
+        super().__init__(line=line, col=col)
         self.obj = obj
         self.index = index
 
 
+class SliceNode(ASTNode):
+    def __init__(self, obj: ASTNode, start: Optional[ASTNode], stop: Optional[ASTNode], line: Optional[int] = None, col: Optional[int] = None):
+        super().__init__(line=line, col=col)
+        self.obj = obj
+        self.start = start
+        self.stop = stop
+
+
 class CallNode(ASTNode):
-    def __init__(self, name: str, args: List[ASTNode]):
+    def __init__(self, name: str, args: List[ASTNode], line: Optional[int] = None, col: Optional[int] = None):
+        super().__init__(line=line, col=col)
         self.name = name
         self.args = args
 
@@ -119,6 +138,11 @@ class ExprStmt(StmtNode):
         self.expr = expr
 
 
+class AmdoStmt(StmtNode):
+    def __init__(self, path: str):
+        self.path = path
+
+
 def ast_to_debug_lines(node: ASTNode, indent: int = 0) -> List[str]:
     pad = "  " * indent
     if isinstance(node, NumberNode):
@@ -147,6 +171,18 @@ def ast_to_debug_lines(node: ASTNode, indent: int = 0) -> List[str]:
         lines = [f"{pad}Index"]
         lines.extend(ast_to_debug_lines(node.obj, indent + 1))
         lines.extend(ast_to_debug_lines(node.index, indent + 1))
+        return lines
+    if isinstance(node, SliceNode):
+        lines = [f"{pad}Slice"]
+        lines.extend(ast_to_debug_lines(node.obj, indent + 1))
+        if node.start:
+            lines.extend(ast_to_debug_lines(node.start, indent + 1))
+        else:
+            lines.append(f"{pad}  None")
+        if node.stop:
+            lines.extend(ast_to_debug_lines(node.stop, indent + 1))
+        else:
+            lines.append(f"{pad}  None")
         return lines
     if isinstance(node, CallNode):
         lines = [f"{pad}Call({node.name})"]
@@ -201,6 +237,8 @@ def ast_to_debug_lines(node: ASTNode, indent: int = 0) -> List[str]:
         return [f"{pad}ThamoStmt"]
     if isinstance(node, ChalanoStmt):
         return [f"{pad}ChalanoStmt"]
+    if isinstance(node, AmdoStmt):
+        return [f"{pad}AmdoStmt({node.path!r})"]
     if isinstance(node, ExprStmt):
         lines = [f"{pad}ExprStmt"]
         lines.extend(ast_to_debug_lines(node.expr, indent + 1))
@@ -210,4 +248,3 @@ def ast_to_debug_lines(node: ASTNode, indent: int = 0) -> List[str]:
 
 def tokens_to_lines(tokens):
     return [f"{token.type:<12} {token.value}" for token in tokens]
-

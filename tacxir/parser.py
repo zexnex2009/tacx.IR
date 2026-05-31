@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from .ast_nodes import *
-from .tokens import Token
+from .tokens import Token, pos_to_linecol
 
 
 class Parser:
@@ -10,10 +10,12 @@ class Parser:
         self.pos = 0
         self.source = source
 
+    def _token_loc(self, token: Token):
+        return pos_to_linecol(self.source, token.pos)
+
     def _error(self, msg: str, token: Optional[Token] = None):
         if token:
-            from .tokens import pos_to_linecol
-            line, col = pos_to_linecol(self.source, token.pos)
+            line, col = self._token_loc(token)
             raise SyntaxError(f"{msg} at line {line}, col {col} (token {token.type} '{token.value}')")
         raise SyntaxError(msg)
 
@@ -49,14 +51,17 @@ class Parser:
         return "".join(decoded)
 
     def parse_assignment_target(self) -> ASTNode:
-        if self.peek() is None or self.peek().type != "VAR":
-            self._error("Expected variable (with $) after Rakho", self.peek())
-        target = VarNode(self.consume().value)
+        tok = self.peek()
+        if tok is None or tok.type != "VAR":
+            self._error("Expected variable (with $) after Rakho", tok)
+        line, col = self._token_loc(tok)
+        target = VarNode(self.consume().value, line=line, col=col)
         while self.peek() and self.peek().type == "LBRACKET":
-            self.consume("LBRACKET")
+            ltok = self.consume("LBRACKET")
+            line, col = self._token_loc(ltok)
             index = self.parse_expression()
             self.consume("RBRACKET")
-            target = IndexNode(target, index)
+            target = IndexNode(target, index, line=line, col=col)
         return target
 
     def parse_expression(self) -> ASTNode:
@@ -65,52 +70,59 @@ class Parser:
     def parse_or(self):
         left = self.parse_and()
         while self.peek() and self.peek().type == "OTHOBA":
-            op = self.consume().value
+            op_tok = self.consume()
+            line, col = self._token_loc(op_tok)
             right = self.parse_and()
-            left = BinOpNode(op, left, right)
+            left = BinOpNode(op_tok.value, left, right, line=line, col=col)
         return left
 
     def parse_and(self):
         left = self.parse_comparison()
         while self.peek() and self.peek().type == "EBONG":
-            op = self.consume().value
+            op_tok = self.consume()
+            line, col = self._token_loc(op_tok)
             right = self.parse_comparison()
-            left = BinOpNode(op, left, right)
+            left = BinOpNode(op_tok.value, left, right, line=line, col=col)
         return left
 
     def parse_comparison(self):
         left = self.parse_additive()
         while self.peek() and self.peek().type in ("EQEQ", "NOTEQ", "LT", "GT", "LTE", "GTE"):
-            op = self.consume().value
+            op_tok = self.consume()
+            line, col = self._token_loc(op_tok)
             right = self.parse_additive()
-            left = BinOpNode(op, left, right)
+            left = BinOpNode(op_tok.value, left, right, line=line, col=col)
         return left
 
     def parse_additive(self):
         left = self.parse_multiplicative()
         while self.peek() and self.peek().type in ("PLUS", "MINUS"):
-            op = self.consume().value
+            op_tok = self.consume()
+            line, col = self._token_loc(op_tok)
             right = self.parse_multiplicative()
-            left = BinOpNode(op, left, right)
+            left = BinOpNode(op_tok.value, left, right, line=line, col=col)
         return left
 
     def parse_multiplicative(self):
         left = self.parse_unary()
         while self.peek() and self.peek().type in ("MUL", "DIV", "MOD"):
-            op = self.consume().value
+            op_tok = self.consume()
+            line, col = self._token_loc(op_tok)
             right = self.parse_unary()
-            left = BinOpNode(op, left, right)
+            left = BinOpNode(op_tok.value, left, right, line=line, col=col)
         return left
 
     def parse_unary(self):
         if self.peek() and self.peek().type == "MINUS":
-            self.consume("MINUS")
+            tok = self.consume("MINUS")
+            line, col = self._token_loc(tok)
             operand = self.parse_unary()
-            return UnaryOpNode("-", operand)
+            return UnaryOpNode("-", operand, line=line, col=col)
         if self.peek() and self.peek().type == "NA":
-            self.consume("NA")
+            tok = self.consume("NA")
+            line, col = self._token_loc(tok)
             operand = self.parse_unary()
-            return UnaryOpNode("!", operand)
+            return UnaryOpNode("!", operand, line=line, col=col)
         return self.parse_postfix()
 
     def parse_postfix(self):
@@ -119,14 +131,28 @@ class Parser:
             tok = self.peek()
             if tok and tok.type == "LBRACKET":
                 self.consume("LBRACKET")
-                index = self.parse_expression()
-                self.consume("RBRACKET")
-                expr = IndexNode(expr, index)
+                line, col = self._token_loc(tok)
+                if self.peek() and self.peek().type == "COLON":
+                    self.consume("COLON")
+                    stop = None if self.peek().type == "RBRACKET" else self.parse_expression()
+                    self.consume("RBRACKET")
+                    expr = SliceNode(expr, None, stop, line=line, col=col)
+                else:
+                    index = self.parse_expression()
+                    if self.peek() and self.peek().type == "COLON":
+                        self.consume("COLON")
+                        stop = None if self.peek().type == "RBRACKET" else self.parse_expression()
+                        self.consume("RBRACKET")
+                        expr = SliceNode(expr, index, stop, line=line, col=col)
+                    else:
+                        self.consume("RBRACKET")
+                        expr = IndexNode(expr, index, line=line, col=col)
             elif tok and tok.type == "LPAREN":
                 if not isinstance(expr, VarNode):
                     self._error("Only identifiers can be called", tok)
                 name = expr.name
                 self.consume("LPAREN")
+                line, col = self._token_loc(tok)
                 args = []
                 if self.peek() and self.peek().type != "RPAREN":
                     args.append(self.parse_expression())
@@ -134,7 +160,7 @@ class Parser:
                         self.consume("COMMA")
                         args.append(self.parse_expression())
                 self.consume("RPAREN")
-                expr = CallNode(name, args)
+                expr = CallNode(name, args, line=line, col=col)
             else:
                 break
         return expr
@@ -143,25 +169,26 @@ class Parser:
         tok = self.peek()
         if tok is None:
             self._error("Unexpected end of expression")
+        line, col = self._token_loc(tok)
         if tok.type == "NUMBER":
             self.consume()
             raw = tok.value
-            return NumberNode(float(raw) if "." in raw else int(raw))
+            return NumberNode(float(raw) if "." in raw else int(raw), line=line, col=col)
         elif tok.type == "STRING":
             self.consume()
-            return StringNode(self.decode_string_literal(tok))
+            return StringNode(self.decode_string_literal(tok), line=line, col=col)
         elif tok.type == "SOTYO":
             self.consume()
-            return BooleanNode(True)
+            return BooleanNode(True, line=line, col=col)
         elif tok.type == "MITHYA":
             self.consume()
-            return BooleanNode(False)
+            return BooleanNode(False, line=line, col=col)
         elif tok.type == "VAR":
             self.consume()
-            return VarNode(tok.value)
+            return VarNode(tok.value, line=line, col=col)
         elif tok.type == "ID":
             self.consume()
-            return VarNode(tok.value)
+            return VarNode(tok.value, line=line, col=col)
         elif tok.type == "LPAREN":
             self.consume("LPAREN")
             expr = self.parse_expression()
@@ -176,7 +203,7 @@ class Parser:
                     self.consume("COMMA")
                     elements.append(self.parse_expression())
             self.consume("RBRACKET")
-            return ArrayLiteralNode(elements)
+            return ArrayLiteralNode(elements, line=line, col=col)
         else:
             self._error(f"Unexpected token {tok.type} in expression", tok)
 
@@ -184,6 +211,11 @@ class Parser:
         tok = self.peek()
         if tok is None:
             return None
+        if tok.type == "AMDO":
+            self.consume("AMDO")
+            path_tok = self.consume("STRING")
+            self.consume("SEMI")
+            return AmdoStmt(self.decode_string_literal(path_tok))
         if tok.type == "BOLO":
             self.consume("BOLO")
             expr = self.parse_expression()

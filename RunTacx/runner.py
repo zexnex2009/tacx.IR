@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Callable, Optional
 from unittest.mock import patch
 
-from tacxIR import Parser, TacxIR, tokenize
+from tacxir import Parser, TacxIR, TacxIRError, tokenize
 
 
 @dataclass
@@ -22,6 +22,8 @@ def load_source(path: str | Path) -> str:
 
 
 def _format_exception(exc: BaseException) -> str:
+    if isinstance(exc, TacxIRError):
+        return exc.format()
     return f"{type(exc).__name__}: {exc}"
 
 
@@ -31,7 +33,7 @@ def run_source(source: str, input_provider: Optional[Callable[[], str]] = None) 
         tokens, src = tokenize(source)
         parser = Parser(tokens, src)
         program = parser.parse_program()
-        interpreter = TacxIR()
+        interpreter = TacxIR(source=src)
         with redirect_stdout(stdout):
             if input_provider is None:
                 interpreter.execute(program)
@@ -41,4 +43,3 @@ def run_source(source: str, input_provider: Optional[Callable[[], str]] = None) 
         return RunResult(ok=True, output=stdout.getvalue())
     except BaseException as exc:  # noqa: BLE001 - deliberate GUI error boundary
         return RunResult(ok=False, output=stdout.getvalue(), error=_format_exception(exc))
-
