@@ -1,0 +1,16 @@
+# Tacx.IR — Root Project Dependencies
+# ======================================
+# The core interpreter package (tacxir/) has NO external dependencies;
+# it runs entirely on Python standard library modules.
+#
+# The RunTacx GUI desktop launcher requires PyQt.
+# PyQt5 is the default; PyQt6 is also supported via import fallback.
+#
+# Quick install:
+#   python -m pip install -r requirements.txt
+#
+# To install the RunTacx GUI dependencies only:
+#   python -m pip install -r RunTacx/requirements.txt
+
+# --- RunTacx GUI ---
+PyQt5>=5.15
