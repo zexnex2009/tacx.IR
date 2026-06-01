@@ -288,6 +288,40 @@ class Parser:
             self.consume("CHALANO")
             self.consume("SEMI")
             return ChalanoStmt()
+        elif tok.type == "VAR":
+            # Check for augmented assignment ($x += expr) or increment/decrement ($x++ or ++$x)
+            var_tok = self.consume("VAR")
+            line, col = self._token_loc(var_tok)
+            target = VarNode(var_tok.value, line=line, col=col)
+            
+            # Check for postfix ++ or --
+            if self.peek() and self.peek().type == "PLUSPLUS":
+                self.consume("PLUSPLUS")
+                self.consume("SEMI")
+                return IncDecStmt(target, "++", postfix=True, line=line, col=col)
+            elif self.peek() and self.peek().type == "MINUSMINUS":
+                self.consume("MINUSMINUS")
+                self.consume("SEMI")
+                return IncDecStmt(target, "--", postfix=True, line=line, col=col)
+            # Check for augmented assignment operators
+            elif self.peek() and self.peek().type in ("PLUSEQ", "MINUSEQ", "MULEQ", "DIVEQ", "MODEQ"):
+                op_tok = self.consume()
+                op_map = {"PLUSEQ": "+=", "MINUSEQ": "-=", "MULEQ": "*=", "DIVEQ": "/=", "MODEQ": "%="}
+                op = op_map[op_tok.type]
+                expr = self.parse_expression()
+                self.consume("SEMI")
+                return AugAssignStmt(target, op, expr, line=line, col=col)
+            # Check for regular assignment
+            elif self.peek() and self.peek().type == "EQ":
+                self.consume("EQ")
+                expr = self.parse_expression()
+                self.consume("SEMI")
+                return RakhoStmt(target, expr)
+            else:
+                # This is an expression starting with a variable
+                expr = self._continue_parse_expression_from_var(target)
+                self.consume("SEMI")
+                return ExprStmt(expr)
         elif tok.type == "SEMI":
             self.consume("SEMI")
             return None
@@ -295,6 +329,47 @@ class Parser:
             expr = self.parse_expression()
             self.consume("SEMI")
             return ExprStmt(expr)
+
+    def _continue_parse_expression_from_var(self, start_node: VarNode) -> ASTNode:
+        """Continue parsing an expression that started with a variable."""
+        expr = start_node
+        while True:
+            tok = self.peek()
+            if tok and tok.type == "LBRACKET":
+                self.consume("LBRACKET")
+                line, col = self._token_loc(tok)
+                if self.peek() and self.peek().type == "COLON":
+                    self.consume("COLON")
+                    stop = None if self.peek().type == "RBRACKET" else self.parse_expression()
+                    self.consume("RBRACKET")
+                    expr = SliceNode(expr, None, stop, line=line, col=col)
+                else:
+                    index = self.parse_expression()
+                    if self.peek() and self.peek().type == "COLON":
+                        self.consume("COLON")
+                        stop = None if self.peek().type == "RBRACKET" else self.parse_expression()
+                        self.consume("RBRACKET")
+                        expr = SliceNode(expr, index, stop, line=line, col=col)
+                    else:
+                        self.consume("RBRACKET")
+                        expr = IndexNode(expr, index, line=line, col=col)
+            elif tok and tok.type == "LPAREN":
+                if not isinstance(expr, VarNode):
+                    self._error("Only identifiers can be called", tok)
+                name = expr.name
+                self.consume("LPAREN")
+                line, col = self._token_loc(tok)
+                args = []
+                if self.peek() and self.peek().type != "RPAREN":
+                    args.append(self.parse_expression())
+                    while self.peek() and self.peek().type == "COMMA":
+                        self.consume("COMMA")
+                        args.append(self.parse_expression())
+                self.consume("RPAREN")
+                expr = CallNode(name, args, line=line, col=col)
+            else:
+                break
+        return expr
 
     def parse_block(self) -> List[StmtNode]:
         stmts = []

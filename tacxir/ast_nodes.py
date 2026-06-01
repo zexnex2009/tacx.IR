@@ -143,6 +143,26 @@ class AmdoStmt(StmtNode):
         self.path = path
 
 
+class AugAssignStmt(StmtNode):
+    """Augmented assignment statement (e.g., $x += 5, $y -= 3)"""
+    def __init__(self, target, op: str, value, line: Optional[int] = None, col: Optional[int] = None):
+        self.target = target
+        self.op = op
+        self.value = value
+        self.line = line
+        self.col = col
+
+
+class IncDecStmt(StmtNode):
+    """Increment/Decrement statement (e.g., $x++, $y--)"""
+    def __init__(self, target, op: str, postfix: bool = True, line: Optional[int] = None, col: Optional[int] = None):
+        self.target = target
+        self.op = op  # '++' or '--'
+        self.postfix = postfix  # True for $x++, False for ++$x
+        self.line = line
+        self.col = col
+
+
 def ast_to_debug_lines(node: ASTNode, indent: int = 0) -> List[str]:
     pad = "  " * indent
     if isinstance(node, NumberNode):
@@ -239,6 +259,14 @@ def ast_to_debug_lines(node: ASTNode, indent: int = 0) -> List[str]:
         return [f"{pad}ChalanoStmt"]
     if isinstance(node, AmdoStmt):
         return [f"{pad}AmdoStmt({node.path!r})"]
+    if isinstance(node, AugAssignStmt):
+        lines = [f"{pad}AugAssign({node.op})"]
+        lines.extend(ast_to_debug_lines(node.target, indent + 1))
+        lines.extend(ast_to_debug_lines(node.value, indent + 1))
+        return lines
+    if isinstance(node, IncDecStmt):
+        prefix = "prefix" if not node.postfix else "postfix"
+        return [f"{pad}IncDec({node.op}, {prefix})"]
     if isinstance(node, ExprStmt):
         lines = [f"{pad}ExprStmt"]
         lines.extend(ast_to_debug_lines(node.expr, indent + 1))

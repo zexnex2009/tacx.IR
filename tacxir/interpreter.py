@@ -70,27 +70,39 @@ class TacxIR:
         self.imported_files: set = set()
         self.import_stack: List[Path] = []
         self.builtins: Dict[str, Callable[[List[Any]], Any]] = {
-            "Lomba": self._builtin_lomba,
+            # Length function
             "lomba": self._builtin_lomba,
-            "Dhukao": self._builtin_dhukao,
+            
+            # Array push function
             "dhukao": self._builtin_dhukao,
-            "dhuk": self._builtin_dhukao,
-            "BerKoro": self._builtin_berkoro,
+            
+            # Array pop function
             "berkoro": self._builtin_berkoro,
-            "berkr": self._builtin_berkoro,
-            "Dhoron": self._builtin_dhoron,
+            
+            # Type inspection function
             "dhoron": self._builtin_dhoron,
-            "dhron": self._builtin_dhoron,
+            
+            # Math functions
             "mul": self._builtin_sqrt,
             "ghat": self._builtin_power,
             "boro": self._builtin_max,
             "choto": self._builtin_min,
+            
+            # String functions
             "bhag": self._builtin_split,
             "jora": self._builtin_join,
             "borhat": self._builtin_upper,
             "chothat": self._builtin_lower,
+            
+            # File I/O functions
             "porofile": self._builtin_read_file,
             "lekhofile": self._builtin_write_file,
+            
+            # Type conversion functions
+            "shonkha": self._builtin_shonkha,
+            "lekha": self._builtin_lekha,
+            "purno": self._builtin_purno,
+            "vashshonkha": self._builtin_vashshonkha,
         }
 
     def _make_runtime_error(self, message: str, node: Optional[ASTNode] = None) -> TacxIRRuntimeError:
@@ -312,6 +324,67 @@ class TacxIR:
         except PermissionError:
             raise PermissionError(f"Permission denied: {path}")
 
+    def _builtin_shonkha(self, args: List[Any]) -> Any:
+        """Convert value to number (shonkha)."""
+        self._expect_arity("shonkha", args, 1)
+        val = args[0]
+        if isinstance(val, bool):
+            return 1 if val else 0
+        if isinstance(val, (int, float)):
+            return val
+        if isinstance(val, str):
+            try:
+                if "." in val:
+                    return float(val)
+                return int(val)
+            except ValueError:
+                raise ValueError(f"Cannot convert '{val}' to number")
+        raise TypeError(f"Cannot convert {type(val).__name__} to number")
+
+    def _builtin_lekha(self, args: List[Any]) -> Any:
+        """Convert value to string (lekha)."""
+        self._expect_arity("lekha", args, 1)
+        val = args[0]
+        if val is None:
+            return "khali"
+        if isinstance(val, bool):
+            return "sotyo" if val else "mithya"
+        if isinstance(val, list):
+            return "[" + ", ".join(str(e) for e in val) + "]"
+        return str(val)
+
+    def _builtin_purno(self, args: List[Any]) -> Any:
+        """Convert value to integer (purno)."""
+        self._expect_arity("purno", args, 1)
+        val = args[0]
+        if isinstance(val, bool):
+            return 1 if val else 0
+        if isinstance(val, float):
+            return int(val)
+        if isinstance(val, int):
+            return val
+        if isinstance(val, str):
+            try:
+                return int(float(val))
+            except ValueError:
+                raise ValueError(f"Cannot convert '{val}' to integer")
+        raise TypeError(f"Cannot convert {type(val).__name__} to integer")
+
+    def _builtin_vashshonkha(self, args: List[Any]) -> Any:
+        """Convert value to float (vashshonkha)."""
+        self._expect_arity("vashshonkha", args, 1)
+        val = args[0]
+        if isinstance(val, bool):
+            return 1.0 if val else 0.0
+        if isinstance(val, (int, float)):
+            return float(val)
+        if isinstance(val, str):
+            try:
+                return float(val)
+            except ValueError:
+                raise ValueError(f"Cannot convert '{val}' to float")
+        raise TypeError(f"Cannot convert {type(val).__name__} to float")
+
     def eval_expr(self, node: ASTNode) -> Any:
         def _eval():
             if isinstance(node, NumberNode):
@@ -344,11 +417,13 @@ class TacxIR:
                     stop = self._coerce_index(self.eval_expr(node.stop))
                 return obj[start:stop]
             if isinstance(node, CallNode):
-                builtin = self.builtins.get(node.name)
+                # Case-sensitive function lookup
+                func_name = node.name
+                builtin = self.builtins.get(func_name)
                 if builtin is not None:
                     args = [self.eval_expr(a) for a in node.args]
                     return builtin(args)
-                func = self.functions.get(node.name)
+                func = self.functions.get(func_name)
                 if func is None:
                     raise NameError(f"Function '{node.name}' not defined")
                 args = [self.eval_expr(a) for a in node.args]
@@ -505,10 +580,68 @@ class TacxIR:
                 raise ContinueException()
             elif isinstance(stmt, AmdoStmt):
                 self._execute_import(stmt)
+            elif isinstance(stmt, AugAssignStmt):
+                self._execute_augmented_assignment(stmt)
+            elif isinstance(stmt, IncDecStmt):
+                self._execute_inc_dec(stmt)
             elif isinstance(stmt, ExprStmt):
                 self.eval_expr(stmt.expr)
             else:
                 raise RuntimeError(f"Unknown statement {type(stmt)}")
+
+    def _execute_augmented_assignment(self, stmt: AugAssignStmt):
+        """Execute augmented assignment (e.g., $x += 5, $y -= 3)."""
+        current_value = self.eval_expr(stmt.target)
+        new_value = self.eval_expr(stmt.value)
+        
+        # Map operator to operation
+        op = stmt.op
+        if op == "+=":
+            if isinstance(current_value, str) or isinstance(new_value, str):
+                result = str(current_value) + str(new_value)
+            elif is_number(current_value) and is_number(new_value):
+                result = current_value + new_value
+            else:
+                raise TypeError(f"Operator '+=' requires numbers or strings, got {type(current_value).__name__} and {type(new_value).__name__}")
+        elif op == "-=":
+            if not is_number(current_value) or not is_number(new_value):
+                raise TypeError(f"Operator '-=' requires numbers, got {type(current_value).__name__} and {type(new_value).__name__}")
+            result = current_value - new_value
+        elif op == "*=":
+            if not is_number(current_value) or not is_number(new_value):
+                raise TypeError(f"Operator '*=' requires numbers, got {type(current_value).__name__} and {type(new_value).__name__}")
+            result = current_value * new_value
+        elif op == "/=":
+            if not is_number(current_value) or not is_number(new_value):
+                raise TypeError(f"Operator '/=' requires numbers, got {type(current_value).__name__} and {type(new_value).__name__}")
+            if new_value == 0:
+                raise ZeroDivisionError("Division by zero")
+            result = current_value / new_value
+        elif op == "%=":
+            if not is_number(current_value) or not is_number(new_value):
+                raise TypeError(f"Operator '%=' requires numbers, got {type(current_value).__name__} and {type(new_value).__name__}")
+            if new_value == 0:
+                raise ZeroDivisionError("Modulo by zero")
+            result = current_value % new_value
+        else:
+            raise RuntimeError(f"Unknown augmented assignment operator '{op}'")
+        
+        self._assign_target(stmt.target, result)
+
+    def _execute_inc_dec(self, stmt: IncDecStmt):
+        """Execute increment/decrement (e.g., $x++, $y--)."""
+        current_value = self.eval_expr(stmt.target)
+        if not is_number(current_value):
+            raise TypeError(f"Operator '{stmt.op}' requires a number, got {type(current_value).__name__}")
+        
+        if stmt.op == "++":
+            new_value = current_value + 1
+        elif stmt.op == "--":
+            new_value = current_value - 1
+        else:
+            raise RuntimeError(f"Unknown increment/decrement operator '{stmt.op}'")
+        
+        self._assign_target(stmt.target, new_value)
 
     def _execute_import(self, stmt: AmdoStmt):
         if self.current_file is None:
