@@ -1,38 +1,6 @@
-# Byte-compiled
+```
 __pycache__/
-*.py[cod]
-*$py.class
-
-# Distribution / packaging
-build/
-dist/
-*.egg-info/
-*.egg
-
-# Virtual environments
-.venv
-venv/
-env/
-
-# IDE
-.idea/
-.vscode/
-
-# Operating System
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Test / coverage
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Backup files
-*.bak
-*.swp
-*.tmp
-*~
-
-# Project specific
-.antigravitycli/
+*.pyc
+*.pyo
+*.pyd
+```

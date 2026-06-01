@@ -21,16 +21,16 @@ ALIASES = {
 TOKEN_TYPES = [
     ("DHORI", keyword_pattern("dhori")),
     ("FEROT", keyword_pattern("dao")),
-    ("JOTOKHON", keyword_pattern("jtkhn|jotokhon")),
-    ("THAMO", keyword_pattern("tham|thamo")),
-    ("CHALANO", keyword_pattern("chal|chalano")),
+    ("JOTOKHON", keyword_pattern("jotokhon")),
+    ("THAMO", keyword_pattern("thamo")),
+    ("CHALANO", keyword_pattern("chalano")),
     ("SOTYO", keyword_pattern("sotyo")),
     ("MITHYA", keyword_pattern("mithya")),
-    ("EBONG", keyword_pattern("ar|ebong")),
-    ("OTHOBA", keyword_pattern("ba|othoba")),
+    ("EBONG", keyword_pattern("ebong")),
+    ("OTHOBA", keyword_pattern("othoba")),
     ("NAILE", keyword_pattern("naile")),
     ("NA", keyword_pattern("na")),
-    ("CHOLAO", keyword_pattern("kor|cholao")),
+    ("CHOLAO", keyword_pattern("cholao")),
     ("BAR", keyword_pattern("bar")),
     ("JODI", keyword_pattern("jodi")),
     ("BOLO", keyword_pattern("bolo")),
@@ -54,6 +54,13 @@ TOKEN_TYPES = [
     ("EQ", r"="),
     ("LT", r"<"),
     ("GT", r">"),
+    ("PLUSEQ", r"\+="),
+    ("MINUSEQ", r"-="),
+    ("MULEQ", r"\*="),
+    ("DIVEQ", r"/="),
+    ("MODEQ", r"%="),
+    ("PLUSPLUS", r"\+\+"),
+    ("MINUSMINUS", r"--"),
     ("PLUS", r"\+"),
     ("MINUS", r"-"),
     ("MUL", r"\*"),
@@ -68,7 +75,7 @@ TOKEN_TYPES = [
 ]
 
 
-TOKEN_REGEX = re.compile("|".join(f"(?P<{name}>{pattern})" for name, pattern in TOKEN_TYPES), re.IGNORECASE)
+TOKEN_REGEX = re.compile("|".join(f"(?P<{name}>{pattern})" for name, pattern in TOKEN_TYPES))
 KEYWORD_TOKEN_TYPES = {
     "DHORI", "FEROT", "JOTOKHON", "THAMO", "CHALANO",
     "SOTYO", "MITHYA", "EBONG", "OTHOBA", "NAILE",
@@ -102,8 +109,7 @@ def tokenize(code: str):
         value = mo.group()
         if kind in ("SKIP", "COMMENT"):
             continue
-        if kind in KEYWORD_TOKEN_TYPES:
-            value = value.lower()
+        # Keywords are now case-sensitive, preserve original case
         if kind == "MISMATCH":
             line, col = pos_to_linecol(code, mo.start())
             raise SyntaxError(f"Unexpected character {value!r} at line {line}, column {col}")
